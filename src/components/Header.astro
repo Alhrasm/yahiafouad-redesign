@@ -1,0 +1,125 @@
+---
+import Logo from './Logo.astro';
+import { nav, contact } from '../data/site';
+import { u } from '../lib/url';
+
+interface Props { tone?: 'paper' | 'night' }
+const { tone = 'paper' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = decodeURI(Astro.url.pathname).replace(base, '') || '/';
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class:list={['site-header', `site-header--${tone}`, tone === 'night' && 'on-night']} data-header>
+  <div class="container site-header__inner">
+    <a href={u('/')} class="site-header__brand" aria-label="يحيى فؤاد — الصفحة الرئيسية">
+      <Logo />
+    </a>
+
+    <nav class="site-nav" aria-label="القائمة الرئيسية">
+      <ul role="list">
+        {nav.map((item) => (
+          <li>
+            <a href={u(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <a href={u('/booking-app/')} class:list={['btn btn--sm site-header__cta', tone === 'night' && 'btn--light']} data-track="cta_book" data-track-loc="header">
+        احجز استشارتك
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+        <span class="sr-only">فتح القائمة</span>
+        <span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" hidden data-menu>
+    <nav class="container mobile-menu__nav" aria-label="القائمة">
+      <ul role="list">
+        {nav.map((item, i) => (
+          <li style={`--i:${i}`}>
+            <a href={u(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+      <div class="mobile-menu__foot">
+        <a href={u('/booking-app/')} class="btn btn--light btn--block" data-track="cta_book" data-track-loc="mobile_menu">احجز استشارتك</a>
+        <p class="caption"><a href={`mailto:${contact.email}`} class="en">{contact.email}</a></p>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--paper);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .site-header--night { background: var(--night); color: var(--on-night); }
+  .site-header.is-scrolled { border-bottom-color: var(--line); }
+  .site-header--night.is-scrolled { border-bottom-color: var(--night-line); }
+
+  .site-header__inner {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--s-5);
+    min-height: var(--header-h);
+  }
+  .site-header__brand { text-decoration: none; display: inline-flex; min-height: 44px; align-items: center; }
+
+  .site-nav ul { display: flex; gap: clamp(1rem, 2vw, 2.1rem); padding: 0; list-style: none; }
+  .site-nav a {
+    position: relative; display: inline-flex; min-height: 44px; align-items: center;
+    text-decoration: none; font-size: 0.975rem; font-weight: 500; color: inherit; opacity: 0.82;
+    transition: opacity var(--dur);
+  }
+  .site-nav a:hover, .site-nav a[aria-current='page'] { opacity: 1; }
+  .site-nav a::after {
+    content: ''; position: absolute; inset-inline: 0; bottom: 8px; height: 1px; background: currentColor;
+    transform: scaleX(0); transform-origin: right; transition: transform var(--dur) var(--ease);
+  }
+  .site-nav a:hover::after, .site-nav a[aria-current='page']::after { transform: scaleX(1); }
+
+  .site-header__actions { display: flex; align-items: center; gap: var(--s-3); }
+
+  .menu-toggle {
+    display: none; width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid var(--line-strong); background: transparent; place-items: center;
+  }
+  .on-night .menu-toggle { border-color: rgb(242 236 226 / 0.3); }
+  .menu-toggle__bars { display: grid; gap: 6px; width: 18px; }
+  .menu-toggle__bars span { height: 1.5px; background: currentColor; transition: transform var(--dur) var(--ease); }
+  .menu-toggle[aria-expanded='true'] .menu-toggle__bars span:first-child { transform: translateY(3.75px) rotate(45deg); }
+  .menu-toggle[aria-expanded='true'] .menu-toggle__bars span:last-child { transform: translateY(-3.75px) rotate(-45deg); }
+
+  .mobile-menu {
+    position: fixed; inset: var(--header-h) 0 0 0; z-index: 49;
+    background: var(--night); color: var(--on-night); overflow-y: auto;
+  }
+  .mobile-menu__nav { display: flex; flex-direction: column; min-height: 100%; padding-block: var(--s-6) var(--s-7); }
+  .mobile-menu ul { list-style: none; padding: 0; display: grid; }
+  .mobile-menu li { border-bottom: 1px solid var(--night-line); }
+  .mobile-menu ul a {
+    display: flex; align-items: center; min-height: 64px; text-decoration: none;
+    font-family: var(--font-display); font-size: 2rem; font-weight: 500;
+  }
+  .mobile-menu ul a[aria-current='page'] { color: var(--sand-on-night); }
+  .mobile-menu__foot { margin-block-start: auto; padding-block-start: var(--s-7); display: grid; gap: var(--s-4); text-align: center; color: var(--on-night-muted); }
+  .mobile-menu__foot p a { color: inherit; display: inline-block; padding-block: 0.5em; }
+  @media (prefers-reduced-motion: no-preference) {
+    .mobile-menu:not([hidden]) li { animation: menu-in 520ms var(--ease-out) both; animation-delay: calc(var(--i) * 45ms); }
+    @keyframes menu-in { from { opacity: 0; transform: translateY(10px); } }
+  }
+
+  @media (max-width: 1023px) {
+    .site-nav { display: none; }
+    .menu-toggle { display: grid; }
+  }
+  @media (max-width: 520px) {
+    .site-header__cta { display: none; }
+  }
+</style>

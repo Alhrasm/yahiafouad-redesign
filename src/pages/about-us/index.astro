@@ -1,0 +1,183 @@
+---
+import { Picture } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import MediaCard from '../../components/MediaCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import heroImg from '../../assets/img/portrait-standing.jpg';
+import storyImg from '../../assets/img/portrait-chin.jpg';
+import ctaImg from '../../assets/img/portrait-open.jpg';
+import v1 from '../../assets/img/media-v1.jpg';
+import v2 from '../../assets/img/media-v2.jpg';
+import v3 from '../../assets/img/media-v3.jpg';
+import v4 from '../../assets/img/media-v4.jpg';
+import v5 from '../../assets/img/media-v5.jpg';
+import v6 from '../../assets/img/media-v6.jpg';
+import { brand, media, PRODUCTION_ORIGIN } from '../../data/site';
+import testimonials from '../../data/testimonials.json';
+import { u } from '../../lib/url';
+
+const imgs = { 'media-v1': v1, 'media-v2': v2, 'media-v3': v3, 'media-v4': v4, 'media-v5': v5, 'media-v6': v6 } as const;
+const quote = testimonials.find((t) => t.id === 11)!;
+
+const principles = [
+  { k: 'الرسالة', v: `${brand.message} ${brand.messageFollow}` },
+  { k: 'القيم', v: brand.values },
+  { k: 'الرؤية', v: brand.vision },
+  { k: 'المهمة', v: brand.missionText },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    mainEntity: { '@id': `${PRODUCTION_ORIGIN}/#person` },
+    about: { '@id': `${PRODUCTION_ORIGIN}/#person` },
+  },
+];
+---
+
+<BaseLayout
+  title="عن يحيى فؤاد — استشاري علاقات أسرية وأب لأربعة أبناء"
+  description="قصة يحيى فؤاد: أب لأربعة أبناء، بدأ رحلة الوعي منذ عشرين عامًا، واستشاري علاقات أسرية ومؤسس مجتمع «رفيق». فلسفته: رسالتي ليست أن أعلّم… بل أن أُذكّر."
+  headerTone="night"
+  image={heroImg}
+  type="profile"
+  schema={schema}
+>
+  <section class="ab-hero surface-night on-night">
+    <div class="container ab-hero__grid">
+      <div class="ab-hero__text">
+        <Breadcrumbs items={[{ label: 'عن يحيى' }]} tone="night" />
+        <p class="eyebrow" data-reveal>عن يحيى</p>
+        <h1 class="display" data-reveal style="--delay:80ms">يحيى فؤاد</h1>
+        <p class="lead ab-hero__lede" data-reveal style="--delay:160ms">
+          أب لأربعة أبناء، واستشاري علاقات أسرية، ومتحدث. بدأ رحلة الوعي منذ عشرين عامًا — ولم يتوقف عن التعلّم.
+        </p>
+        <ul class="ab-hero__roles" role="list" data-reveal style="--delay:240ms">
+          <li>استشاري علاقات أسرية</li>
+          <li>متحدث تحفيزي</li>
+          <li>مؤسس «رفيق»</li>
+        </ul>
+      </div>
+      <div class="ab-hero__media fill blend-edges">
+        <Picture src={heroImg} alt="يحيى فؤاد واقفًا بثقة في استوديو" formats={['avif', 'webp']} widths={[360, 540, 720]} sizes="(min-width: 1024px) 38vw, 90vw" loading="eager" fetchpriority="high" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="story-title">
+    <div class="container story">
+      <div class="story__aside">
+        <SectionHeader id="story-title" eyebrow="القصة" title="رحلة بحث… تحوّلت إلى رسالة." />
+        <div class="frame story__img" data-reveal>
+          <Picture src={storyImg} alt="يحيى فؤاد في لحظة تأمل" formats={['avif', 'webp']} widths={[480, 800]} sizes="(min-width: 1024px) 34vw, 90vw" loading="lazy" />
+        </div>
+      </div>
+      <div class="story__chapters">
+        <article class="chapter" data-reveal>
+          <p class="chapter__n num" aria-hidden="true">٠١</p>
+          <h3 class="chapter__title">البداية: في البيت</h3>
+          <p>أنا يحيى فؤاد، أب لأربعة أبناء. بدأت رحلة الوعي منذ عشرين عامًا، وعلى مدار تلك السنوات لم أتوقف عن التعلّم. أعمل استشاريًا للعلاقات الأسرية، أساعد الآباء على التعامل مع تعقيدات تربية الأطفال والمراهقين، وأساعد الأسر والأزواج على بناء تواصل صحي وعلاقات أهدأ.</p>
+        </article>
+        <article class="chapter" data-reveal>
+          <p class="chapter__n num" aria-hidden="true">٠٢</p>
+          <h3 class="chapter__title">رحلة البحث</h3>
+          <p>بالتوازي مع رحلته الأكاديمية التقليدية، اختار يحيى طريقًا غير تقليدي في البحث عن المعرفة العميقة. سافر ليتتلمذ على أيدي متخصصين في علوم تمسّ جوهر الإنسان — منها علم النفس المعرفي، والباراسيكولوجي، والميتافيزيقا، والطاقة الحيوية — ولم يكتفِ بظاهر السلوك.</p>
+          <p>أدرك أن فهم النفس البشرية لا يُستقى من مصدر واحد، ففتح قلبه وعقله لمصادر من خلفيات ثقافية ودينية متعددة، باحثًا عن الجذور المشتركة بين الروح والعقل، بين النص والتجربة.</p>
+        </article>
+        <article class="chapter" data-reveal>
+          <p class="chapter__n num" aria-hidden="true">٠٣</p>
+          <h3 class="chapter__title">الرسالة: «رفيق»</h3>
+          <p>من قلب هذه الرحلة وُلدت رسالة واضحة: أن المعرفة ليست غاية، بل وسيلة للشفاء والحضور والتحوّل. ولهذا أسّس يحيى مشروع «رفيق» — مجتمعًا واعيًا يحتضن كل من يسعى لفهم ذاته، وشفاء جروحه، ومرافقة غيره في رحلة العودة لنفسه.</p>
+          <p class="chapter__quote">«رفيق» هو نداء لكل من تعب من السطحية، واشتاق للعمق… لكل من فقد بوصلته، ويريد أن يجد الطريق إلى ذاته الحقيقية من جديد.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section surface-paper-2" aria-labelledby="principles-title">
+    <div class="container">
+      <SectionHeader id="principles-title" eyebrow="ما يؤمن به" title="أربع جمل تلخّص الطريقة." />
+      <dl class="principles">
+        {principles.map((p, i) => (
+          <div class="principle" data-reveal style={`--delay:${i * 90}ms`}>
+            <dt class="principle__k">{p.k}</dt>
+            <dd class="principle__v">{p.v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="quote-title">
+    <div class="container">
+      <h2 id="quote-title" class="sr-only">من تجارب العملاء</h2>
+      <figure class="ab-quote" data-reveal>
+        <blockquote><p>«{quote.pull}»</p></blockquote>
+        <figcaption class="muted small">— عضو مجهول، من تقييمات الجلسات · <a href={u('/ourreviwe/')}>اقرأ كل التجارب</a></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section surface-paper-2" id="media" aria-labelledby="media-title">
+    <div class="container">
+      <SectionHeader id="media-title" eyebrow="في الإعلام" title="المقابلات واللقاءات." lede="ظهور يحيى فؤاد في برامج تلفزيونية وإذاعية للحديث عن العلاقات والتربية." />
+      <div class="media-grid">
+        {media.map((m, i) => <MediaCard title={m.title} kind={m.kind} href={m.href} img={imgs[m.img as keyof typeof imgs]} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand
+    title="الخطوة الأولى… محادثة."
+    text="إن شعرت أن ما قرأته يشبهك، فابدأ بجلسة واحدة. مساحة آمنة وسرّية تامة."
+    image={ctaImg}
+    imageAlt="يحيى فؤاد يمد يده كأنه يدعوك للحوار"
+  />
+</BaseLayout>
+
+<style>
+  .ab-hero { overflow: hidden; }
+  .ab-hero__grid { display: grid; gap: var(--s-6); padding-block-start: var(--s-6); }
+  .ab-hero__text { display: grid; gap: var(--s-4); align-content: center; padding-block-end: var(--s-6); }
+  .ab-hero__lede { color: var(--on-night-muted); max-width: 34rem; }
+  .ab-hero__roles { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .ab-hero__roles li { border: 1px solid var(--night-line); border-radius: 999px; padding: 0.35em 1em; font-size: var(--fs-small); color: var(--on-night); }
+  .ab-hero__media { aspect-ratio: 4 / 5; max-height: 72vh; margin-inline: auto; width: 100%; max-width: 560px; --fade-x: 14%; }
+  .ab-hero__media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
+  @media (min-width: 1024px) {
+    .ab-hero__grid { grid-template-columns: 1.1fr 0.9fr; min-height: calc(88svh - var(--header-h)); }
+    .ab-hero__media { max-height: none; height: 100%; aspect-ratio: auto; max-width: none; }
+  }
+
+  .story { display: grid; gap: var(--s-8); }
+  .story__aside { display: grid; gap: var(--s-6); align-content: start; }
+  .story__img { aspect-ratio: 5 / 4; }
+  .story__img :global(img) { object-position: 50% 30%; }
+  .story__chapters { display: grid; gap: var(--s-7); }
+  .chapter { display: grid; gap: var(--s-3); padding-block-start: var(--s-5); border-top: 1px solid var(--line-strong); }
+  .chapter__n { color: var(--sand-deep); font-size: 1.2rem; }
+  .chapter__title { font-size: var(--fs-h3); }
+  .chapter p:not(.chapter__n) { color: var(--ink-2); }
+  .chapter__quote { font-family: var(--font-display); font-size: 1.55rem; line-height: 1.6; color: var(--ink) !important; border-inline-start: 2px solid var(--olive); padding-inline-start: var(--s-4); }
+  @media (min-width: 1024px) {
+    .story { grid-template-columns: 0.9fr 1.1fr; gap: var(--s-9); }
+    .story__aside { position: sticky; top: calc(var(--header-h) + var(--s-6)); align-self: start; }
+  }
+
+  .principles { display: grid; gap: var(--s-4); margin-block-start: var(--s-7); }
+  .principle { background: var(--paper); border-radius: var(--radius-l); padding: clamp(1.5rem, 1rem + 2vw, 2.5rem); display: grid; gap: var(--s-3); }
+  .principle__k { font-size: var(--fs-small); font-weight: 600; color: var(--olive-deep); }
+  .principle__v { font-family: var(--font-display); font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.85rem); line-height: 1.55; }
+  @media (min-width: 800px) { .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .ab-quote blockquote p { font-family: var(--font-display); font-weight: 600; font-size: clamp(2.4rem, 1.5rem + 4vw, 5.2rem); line-height: 1.2; max-width: 18ch; }
+  .ab-quote figcaption { margin-block-start: var(--s-4); }
+  .ab-quote a { color: var(--olive-deep); }
+
+  .media-grid { display: grid; gap: var(--s-6) var(--s-4); margin-block-start: var(--s-7); }
+  @media (min-width: 640px) { .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+</style>

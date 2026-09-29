@@ -1,0 +1,208 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import TestimonialCard from '../../components/TestimonialCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { sessionTypes, bookingTerms, PRODUCTION_ORIGIN } from '../../data/site';
+import testimonials from '../../data/testimonials.json';
+import { u, formatPrice, toArabicDigits } from '../../lib/url';
+import ctaImg from '../../assets/img/portrait-seated.jpg';
+import ogImg from '../../assets/img/portrait-speaking.jpg';
+
+const reasons = [
+  'لو بتحس إن التواصل بينك وبين شريك حياتك أو ولادك فيه فجوة، ومحتاج تفهمهم وتتفهم أكتر.',
+  'لو في خلافات أسرية مش لاقي لها حل، وكل محاولة بتزود المشكلة.',
+  'لو نفسك تتعامل مع المراهقين في بيتك بشكل يريحك ويقربك ليهم.',
+  'لو بتحس إنك عايز ترتب مشاعرك وتفهم نفسك أكتر.',
+  'أو ببساطة… لو نفسك تعيش في بيت فيه راحة واحتواء.',
+];
+
+const intentFor: Record<string, string> = { consult: 'unsure', private: 'self', family: 'family' };
+
+const howItWorks = [
+  { t: 'اختر ما تحتاجه', d: 'حدّد ما تمر به، ونقترح عليك نوع الجلسة الأنسب.' },
+  { t: 'احجز موعدك', d: 'اختر يومًا ووقتًا من المواعيد المتاحة مباشرة (من الأحد إلى الخميس).' },
+  { t: 'أكّد بالدفع الآمن', d: 'يتم تأكيد الحجز بعد إتمام الدفع، وتصلك التفاصيل على بياناتك.' },
+  { t: 'الجلسة', d: 'ساعة كاملة في مساحة آمنة، بسرّية تامة، تخرج منها بفهم أوضح وخطوات عملية.' },
+];
+
+const faq = [
+  { q: 'كم مدة الجلسة؟', a: 'مدة كل جلسة ساعة كاملة.' },
+  { q: 'هل الجلسات سرّية؟', a: 'نعم. جميع الجلسات تتم بسرّية تامة، ولا يُسمح بتسجيلها أو مشاركة أي جزء منها بأي وسيلة.' },
+  { q: 'متى يتأكد الحجز؟', a: 'يتم تأكيد الحجز بعد إتمام عملية الدفع بالكامل.' },
+  { q: 'هل يمكنني تأجيل الجلسة؟', a: 'يمكن تأجيل الجلسة قبل موعدها بحد أقصى 48 ساعة، وفي حال التأجيل بعد ذلك لا يمكن استرداد المبلغ.' },
+  { q: 'هل يمكنني الإلغاء واسترداد المبلغ؟', a: 'يمكن إلغاء الجلسة واسترداد المبلغ إذا تم الإلغاء قبل 4 أيام من موعدها. وفي حالة عدم الحضور يتم خصم كامل قيمة الجلسة.' },
+  { q: 'أي جلسة أختار؟', a: 'الجلسة الاستشارية لتحدٍّ محدد وتحتاج توجيهًا عمليًا، والخاصة لفهم الذات وترتيب المشاعر بعمق، والعائلية لما تخص المشكلة أكثر من فرد في البيت. وفي صفحة الحجز نقترح عليك الأنسب حسب ما تمر به.' },
+];
+
+const reviews = [5, 12, 15].map((id) => testimonials.find((t) => t.id === id)!);
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'استشارات العلاقات الأسرية مع يحيى فؤاد',
+    provider: { '@id': `${PRODUCTION_ORIGIN}/#person` },
+    areaServed: 'EG',
+    offers: sessionTypes.map((s) => ({ '@type': 'Offer', name: s.name, price: s.priceFallback, priceCurrency: 'EGP' })),
+  },
+];
+---
+
+<BaseLayout
+  title="الاستشارات — جلسات استشارية وخاصة وعائلية"
+  description="استشارة تصنع فرق مع يحيى فؤاد: جلسات استشارية وخاصة وعائلية مدتها ساعة، بسرّية تامة، للعلاقات الزوجية والتربية وترتيب المشاعر. تعرّف على الأنواع والأسعار واحجز موعدك."
+  image={ogImg}
+  schema={schema}
+>
+  <section class="cs-head">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'الاستشارات' }]} />
+      <div class="cs-head__grid">
+        <div>
+          <p class="eyebrow">مع يحيى فؤاد</p>
+          <h1 class="display cs-head__title">استشارة تصنع فرقًا.</h1>
+        </div>
+        <div class="cs-head__side">
+          <p class="lead muted">
+            جلسات الاستشارة فرصة لإعادة ترتيب العلاقة مع نفسك ومع من حولك — بأسلوب واقعي، بسيط، وعلى يد خبير يرى الصورة كاملة.
+          </p>
+          <a href={u('/booking-app/')} class="btn" data-track="cta_book" data-track-loc="consult_head">احجز استشارتك <span class="arrow" aria-hidden="true">←</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight" aria-labelledby="why-title">
+    <div class="container why">
+      <SectionHeader id="why-title" eyebrow="متى تحتاج الجلسة؟" title="ليه ممكن تحتاج الجلسة؟" />
+      <ul class="why__list" role="list">
+        {reasons.map((r, i) => <li data-reveal style={`--delay:${i * 60}ms`}>{r}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section surface-paper-2" id="types" aria-labelledby="types-title">
+    <div class="container">
+      <SectionHeader id="types-title" eyebrow="أنواع الجلسات" title="ثلاث جلسات، لكل حالة ما يناسبها." />
+      <div class="types">
+        {sessionTypes.map((s, i) => (
+          <article class="type" data-reveal style={`--delay:${i * 90}ms`} id={`type-${s.key}`}>
+            <p class="type__n num" aria-hidden="true">{toArabicDigits(`0${i + 1}`)}</p>
+            <h3 class="type__name">{s.name}</h3>
+            <p class="type__desc">{s.description}</p>
+            <p class="type__for"><span>لمن؟</span> {s.forWho}</p>
+            <div class="type__foot">
+              <p class="type__price"><span class="num">{formatPrice(s.priceFallback)}</span><span class="muted small"> · ٦٠ دقيقة</span></p>
+              <a href={u(`/booking-app/?intent=${intentFor[s.key]}`)} class="btn btn--secondary btn--sm" data-track="cta_book" data-track-loc={`type_${s.key}`}>احجز {s.name} <span class="arrow" aria-hidden="true">←</span></a>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p class="caption muted types__note">الأسعار بالجنيه المصري كما تظهر في نظام الحجز، ويُعرض السعر النهائي قبل الدفع.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="how-title">
+    <div class="container">
+      <SectionHeader id="how-title" eyebrow="كيف تتم" title="من أول خطوة… حتى الجلسة." />
+      <ol class="how" role="list">
+        {howItWorks.map((h, i) => (
+          <li data-reveal style={`--delay:${i * 90}ms`}>
+            <span class="how__n num" aria-hidden="true">{toArabicDigits(i + 1)}</span>
+            <h3 class="how__t">{h.t}</h3>
+            <p class="muted">{h.d}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section surface-paper-2" aria-labelledby="cs-reviews">
+    <div class="container">
+      <SectionHeader id="cs-reviews" eyebrow="تجارب حقيقية" title="ماذا قال من جرّبوا الجلسات؟" />
+      <div class="cs-reviews">
+        {reviews.map((t, i) => <TestimonialCard text={t.text} theme={t.theme} index={i} compact />)}
+      </div>
+      <a href={u('/ourreviwe/')} class="link-arrow cs-reviews__all">كل التجارب <span class="arrow" aria-hidden="true">←</span></a>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="faq-title">
+    <div class="container faq-wrap">
+      <SectionHeader id="faq-title" eyebrow="أسئلة شائعة" title="قبل أن تحجز." />
+      <div class="faq">
+        {faq.map((f) => (
+          <details class="faq__item">
+            <summary>{f.q}<span class="faq__icon" aria-hidden="true"></span></summary>
+            <p class="muted">{f.a}</p>
+          </details>
+        ))}
+        <details class="faq__item">
+          <summary>الشروط والأحكام الكاملة للجلسات<span class="faq__icon" aria-hidden="true"></span></summary>
+          <ul class="muted">{bookingTerms.map((t) => <li>{t}</li>)}</ul>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title="جاهز للخطوة الأولى؟" text="اختر ما تحتاجه، واحجز الموعد المناسب لك في دقائق." image={ctaImg} imageAlt="يحيى فؤاد جالسًا يستمع باهتمام" secondary={{ label: 'اكتشف البرامج والورش', href: '/programs/' }} />
+</BaseLayout>
+
+<style>
+  .cs-head { padding-block: var(--s-5) var(--s-7); }
+  .cs-head__grid { display: grid; gap: var(--s-5); margin-block-start: var(--s-5); align-items: end; }
+  .cs-head__title { margin-block-start: var(--s-3); max-width: 10ch; }
+  .cs-head__side { display: grid; gap: var(--s-5); justify-items: start; max-width: 34rem; }
+  @media (min-width: 1024px) { .cs-head__grid { grid-template-columns: 1.1fr 0.9fr; gap: var(--s-8); } }
+
+  .why { display: grid; gap: var(--s-6); }
+  .why__list { list-style: none; padding: 0; }
+  .why__list li { font-family: var(--font-display); font-size: clamp(1.35rem, 1.15rem + 0.8vw, 1.8rem); line-height: 1.55; padding-block: var(--s-4); border-top: 1px solid var(--line); padding-inline-start: 2rem; position: relative; }
+  .why__list li::before { content: ''; position: absolute; inset-inline-start: 0; top: 1.45em; width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--olive); }
+  @media (min-width: 1024px) { .why { grid-template-columns: 0.8fr 1.2fr; gap: var(--s-9); } }
+
+  .types { display: grid; gap: var(--s-4); margin-block-start: var(--s-7); }
+  @media (min-width: 900px) { .types { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .type { background: var(--paper); border-radius: var(--radius-l); padding: clamp(1.5rem, 1rem + 1.5vw, 2.2rem); display: flex; flex-direction: column; gap: var(--s-3); border: 1px solid var(--line); }
+  .type__n { color: var(--sand-deep); }
+  .type__name { font-size: var(--fs-h3); }
+  .type__desc { color: var(--ink-2); font-size: var(--fs-small); line-height: 1.95; }
+  .type__for { font-size: var(--fs-small); color: var(--muted); }
+  .type__for span { color: var(--olive-deep); font-weight: 600; }
+  .type__foot { margin-block-start: auto; padding-block-start: var(--s-4); border-top: 1px solid var(--line); display: grid; gap: var(--s-3); justify-items: start; }
+  .type__price .num { font-size: 1.9rem; font-weight: 600; }
+  .types__note { margin-block-start: var(--s-4); }
+
+  .how { list-style: none; padding: 0; display: grid; gap: var(--s-5); margin-block-start: var(--s-7); }
+  .how li { display: grid; gap: var(--s-2); padding-block-start: var(--s-4); border-top: 1px solid var(--line-strong); }
+  .how__n { font-size: 2.6rem; line-height: 1; color: var(--olive); }
+  .how__t { font-size: 1.5rem; }
+  @media (min-width: 900px) { .how { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+  .cs-reviews { display: grid; gap: var(--s-4); margin-block-start: var(--s-7); }
+  @media (min-width: 900px) { .cs-reviews { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .cs-reviews__all { margin-block-start: var(--s-5); }
+
+  .faq-wrap { display: grid; gap: var(--s-6); }
+  @media (min-width: 1024px) { .faq-wrap { grid-template-columns: 0.8fr 1.2fr; gap: var(--s-9); } }
+  .faq { border-top: 1px solid var(--line-strong); }
+  .faq__item { border-bottom: 1px solid var(--line-strong); }
+  .faq__item summary {
+    list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: var(--s-4);
+    min-height: 64px; padding-block: var(--s-3); font-family: var(--font-display); font-size: 1.45rem; font-weight: 600;
+  }
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__icon { width: 14px; height: 14px; position: relative; flex: none; }
+  .faq__icon::before, .faq__icon::after { content: ''; position: absolute; inset-inline: 0; top: 50%; height: 1.5px; background: currentColor; transition: transform var(--dur) var(--ease); }
+  .faq__icon::after { transform: rotate(90deg); }
+  .faq__item[open] .faq__icon::after { transform: rotate(0); }
+  .faq__item > p, .faq__item > ul { padding-block-end: var(--s-5); max-width: 40rem; }
+  .faq__item ul { padding-inline-start: 1.2em; display: grid; gap: var(--s-2); }
+</style>

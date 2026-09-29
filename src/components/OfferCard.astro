@@ -1,0 +1,47 @@
+---
+import type { offers } from '../data/site';
+import { u } from '../lib/url';
+type Offer = (typeof offers)[number];
+interface Props { offer: Offer; featured?: boolean; index?: number }
+const { offer, featured = false, index = 0 } = Astro.props;
+const href = offer.cta.external ? offer.cta.href : u(offer.cta.href);
+---
+<article class:list={['offer', featured && 'offer--featured on-night']} data-reveal style={`--delay:${index * 90}ms`} id={`offer-${offer.key}`}>
+  <div class="offer__head">
+    <span class="offer__num num" aria-hidden="true">{offer.eyebrow}</span>
+    <span class:list={['tag', 'tag--dot', offer.status === 'available' || offer.status === 'free' ? 'tag--olive' : '']}>{offer.statusLabel}</span>
+  </div>
+  <h3 class="offer__title">{offer.title}</h3>
+  <p class="offer__what">{offer.what}</p>
+  <dl class="offer__dl">
+    <div><dt>لمن؟</dt><dd>{offer.forWho}</dd></div>
+    <div><dt>بماذا تساعد؟</dt><dd>{offer.helps}</dd></div>
+  </dl>
+  <a href={href} class:list={['btn', featured ? 'btn--light' : 'btn--secondary', 'offer__cta']} data-track={`offer_${offer.key}`} data-track-loc="offers" {...(offer.cta.external ? { rel: 'noopener' } : {})}>
+    {offer.cta.label} <span class="arrow" aria-hidden="true">←</span>
+  </a>
+</article>
+<style>
+  .offer {
+    display: flex; flex-direction: column; gap: var(--s-4);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.4rem); border-radius: var(--radius-l);
+    background: var(--paper); border: 1px solid var(--line);
+    transition: border-color var(--dur) var(--ease), transform 500ms var(--ease-out);
+  }
+  .offer:hover { border-color: var(--line-strong); }
+  .offer--featured { background: var(--night); color: var(--on-night); border-color: var(--night); }
+  .offer--featured .tag--olive { background: rgb(217 194 155 / 0.16); color: var(--sand-on-night); }
+  .offer__head { display: flex; justify-content: space-between; align-items: center; }
+  .offer__num { font-size: 1.05rem; opacity: 0.6; }
+  .offer__title { font-size: var(--fs-h2); line-height: 1.1; }
+  .offer--featured .offer__title { font-size: clamp(2.4rem, 1.8rem + 2.6vw, 4rem); }
+  .offer__what { font-size: var(--fs-lead); line-height: 1.75; }
+  .offer__dl { display: grid; gap: var(--s-4); padding-block: var(--s-4); border-top: 1px solid var(--line); margin-block-start: auto; }
+  .offer--featured .offer__dl { border-color: var(--night-line); }
+  .offer__dl dt { font-size: var(--fs-caption); font-weight: 600; color: var(--olive-deep); margin-block-end: 2px; }
+  .offer--featured .offer__dl dt { color: var(--sand-on-night); }
+  .offer__dl dd { font-size: var(--fs-small); line-height: 1.8; color: var(--muted); }
+  .offer--featured .offer__dl dd { color: var(--on-night-muted); }
+  .offer__cta { align-self: flex-start; }
+  @media (max-width: 520px) { .offer__cta { align-self: stretch; } }
+</style>

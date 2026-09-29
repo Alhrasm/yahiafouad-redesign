@@ -1,0 +1,137 @@
+---
+import '@fontsource-variable/markazi-text';
+import '@fontsource/ibm-plex-sans-arabic/arabic-400.css';
+import '@fontsource/ibm-plex-sans-arabic/arabic-500.css';
+import '@fontsource/ibm-plex-sans-arabic/arabic-600.css';
+import '@fontsource/ibm-plex-sans-arabic/latin-400.css';
+import '@fontsource/ibm-plex-sans-arabic/latin-500.css';
+import '@fontsource/ibm-plex-sans-arabic/latin-600.css';
+import '../styles/global.css';
+import bodyFont from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2?url';
+import displayFont from '@fontsource-variable/markazi-text/files/markazi-text-arabic-wght-normal.woff2?url';
+
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MobileCta from '../components/MobileCta.astro';
+import defaultOg from '../assets/img/portrait-dark-wide.jpg';
+import { brand, contact, PRODUCTION_ORIGIN } from '../data/site';
+import { abs, u } from '../lib/url';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: ImageMetadata;
+  imageAlt?: string;
+  type?: 'website' | 'article' | 'profile';
+  schema?: Record<string, unknown>[];
+  headerTone?: 'paper' | 'night';
+  showMobileCta?: boolean;
+  noindex?: boolean;
+  publishedTime?: Date;
+  modifiedTime?: Date;
+}
+
+const {
+  title,
+  description,
+  image = defaultOg,
+  imageAlt = 'يحيى فؤاد — استشاري علاقات أسرية',
+  type = 'website',
+  schema = [],
+  headerTone = 'paper',
+  showMobileCta = true,
+  noindex = false,
+  publishedTime,
+  modifiedTime,
+} = Astro.props;
+
+const isPreview = import.meta.env.PUBLIC_SITE_ENV === 'preview';
+const canonical = abs(Astro.url.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ''), ''), Astro.site);
+const og = await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 82 });
+const ogUrl = new URL(og.src, Astro.site).href;
+const fullTitle = title.includes('يحيى فؤاد') ? title : `${title} | يحيى فؤاد`;
+
+// Site-wide entity graph (Person + WebSite). Page schemas are appended.
+const siteSchema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': `${PRODUCTION_ORIGIN}/#person`,
+    name: brand.nameAr,
+    alternateName: brand.nameEn,
+    jobTitle: brand.roleAr,
+    description: 'استشاري علاقات أسرية ومتحدث تحفيزي، أب لأربعة أبناء، يساعد الأزواج والآباء والأفراد على فهم أنفسهم وعلاقاتهم.',
+    url: `${PRODUCTION_ORIGIN}/`,
+    email: `mailto:${contact.email}`,
+    telephone: contact.phoneIntl,
+    address: { '@type': 'PostalAddress', addressLocality: 'Cairo', addressCountry: 'EG' },
+    knowsAbout: ['العلاقات الأسرية', 'التربية', 'العلاقات الزوجية', 'تطوير الذات', 'الوعي الذاتي'],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${PRODUCTION_ORIGIN}/#website`,
+    url: `${PRODUCTION_ORIGIN}/`,
+    name: 'يحيى فؤاد',
+    alternateName: 'Yahia Fouad',
+    inLanguage: 'ar',
+    publisher: { '@id': `${PRODUCTION_ORIGIN}/#person` },
+  },
+];
+const allSchema = [...siteSchema, ...schema];
+---
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {(noindex || isPreview) && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content={headerTone === 'night' ? '#151412' : '#f5f1ea'} />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link rel="icon" href={u('/favicon-32.png')} sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href={u('/apple-touch-icon.png')} />
+    <link rel="manifest" href={u('/site.webmanifest')} />
+    <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+    <link rel="sitemap" href={u('/sitemap.xml')} />
+
+    <meta property="og:locale" content="ar_EG" />
+    <meta property="og:site_name" content="يحيى فؤاد" />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogUrl} />
+
+    {allSchema.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body data-preview={isPreview ? 'true' : undefined}>
+    <a class="skip-link" href="#main">تخطَّ إلى المحتوى</a>
+    <Header tone={headerTone} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    {showMobileCta && <MobileCta />}
+    <script>
+      import '../scripts/site';
+    </script>
+  </body>
+</html>

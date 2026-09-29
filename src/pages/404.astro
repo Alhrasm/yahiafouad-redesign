@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { u } from '../lib/url';
+---
+<BaseLayout title="الصفحة غير موجودة" description="الصفحة التي تبحث عنها غير موجودة." noindex>
+  <section class="nf">
+    <div class="container-narrow nf__inner">
+      <p class="eyebrow">٤٠٤</p>
+      <h1 class="display">يبدو أن الطريق تغيّر.</h1>
+      <p class="lead muted">الصفحة التي تبحث عنها غير موجودة أو تم نقلها. ربما تجد ما تحتاجه هنا:</p>
+      <div class="nf__links">
+        <a href={u('/')} class="btn">الرئيسية</a>
+        <a href={u('/booking-app/')} class="btn btn--secondary">احجز استشارتك</a>
+        <a href={u('/articles/')} class="btn btn--secondary">المقالات</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .nf { padding-block: var(--section); }
+  .nf__inner { display: grid; gap: var(--s-5); justify-items: start; }
+  .nf__links { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+</style>

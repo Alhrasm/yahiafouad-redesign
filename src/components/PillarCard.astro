@@ -1,0 +1,33 @@
+---
+import Motif from './Motif.astro';
+import type { Pillar } from '../data/pillars';
+import { u } from '../lib/url';
+interface Props { pillar: Pillar; index?: number }
+const { pillar, index = 0 } = Astro.props;
+---
+<article class="pillar" data-reveal style={`--delay:${index * 110}ms`}>
+  <div class="pillar__visual"><Motif kind={pillar.motif} /></div>
+  <p class="pillar__num num" aria-hidden="true">{pillar.number}</p>
+  <h3 class="pillar__title h2">{pillar.title}</h3>
+  <p class="pillar__kicker">{pillar.kicker}</p>
+  <p class="pillar__summary muted">{pillar.summary}</p>
+  <a href={u(`/${pillar.slug}/`)} class="link-arrow pillar__cta" data-track="pillar_click" data-track-loc={pillar.category}>
+    {pillar.cta} <span class="arrow" aria-hidden="true">←</span>
+  </a>
+</article>
+<style>
+  .pillar {
+    position: relative; display: flex; flex-direction: column; gap: var(--s-3);
+    padding-block: var(--s-6); border-top: 1px solid var(--line-strong);
+  }
+  .pillar__visual {
+    width: 116px; color: var(--olive); margin-block-end: var(--s-3);
+    transition: transform 900ms var(--ease-out);
+  }
+  .pillar:hover .pillar__visual { transform: rotate(-8deg); }
+  .pillar__num { position: absolute; inset-inline-end: 0; top: var(--s-6); font-size: 1.1rem; color: var(--muted); }
+  .pillar__title { line-height: 1.1; }
+  .pillar__kicker { font-size: var(--fs-small); font-weight: 500; color: var(--olive-deep); }
+  .pillar__summary { max-width: 34ch; }
+  .pillar__cta { margin-block-start: auto; padding-block-start: var(--s-3); }
+</style>

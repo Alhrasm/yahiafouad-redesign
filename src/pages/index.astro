@@ -1,0 +1,495 @@
+---
+import { Picture, Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import PillarCard from '../components/PillarCard.astro';
+import OfferCard from '../components/OfferCard.astro';
+import TestimonialCard from '../components/TestimonialCard.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import MediaCard from '../components/MediaCard.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Motif from '../components/Motif.astro';
+
+import heroImg from '../assets/img/portrait-thoughtful.jpg';
+import philosophyImg from '../assets/img/portrait-dark-wide.jpg';
+import aboutImg from '../assets/img/outdoor.jpg';
+import finalImg from '../assets/img/portrait-open.jpg';
+import mediaV1 from '../assets/img/media-v1.jpg';
+import mediaV4 from '../assets/img/media-v4.jpg';
+import mediaV6 from '../assets/img/media-v6.jpg';
+
+import { brand, offers, media } from '../data/site';
+import { pillars } from '../data/pillars';
+import testimonials from '../data/testimonials.json';
+import { u, toArabicDigits } from '../lib/url';
+
+const articles = (await getCollection('articles')).sort((a, b) => +b.data.date - +a.data.date);
+const [leadArticle, ...moreArticles] = articles;
+
+const pull = testimonials.find((t) => t.id === 3)!;
+const featuredReviews = [7, 11, 6].map((id) => testimonials.find((t) => t.id === id)!);
+const homeMedia = [
+  { ...media[0], image: mediaV1 },
+  { ...media[3], image: mediaV4 },
+  { ...media[5], image: mediaV6 },
+];
+
+const problems = [
+  'تحاول أن تتكلم مع شريك حياتك… فتنتهي كل محاولة بخلاف جديد.',
+  'تشعر بفجوة بينك وبين أولادك، ولا تعرف من أين تبدأ.',
+  'ابنك المراهق صار أبعد… وأصبح الصمت لغة البيت.',
+  'تعيش وسط الناس، وتشعر أنك بعيد عن نفسك.',
+  'تكرر النمط نفسه في كل علاقة، رغم أنك وعدت نفسك ألّا يتكرر.',
+];
+
+const journey = [
+  { word: 'فهم', text: 'نبدأ بالإصغاء: ما الذي يحدث فعلًا، وما الذي تشعر به تحته؟' },
+  { word: 'وعي', text: 'نرى النمط كاملًا: من أين جاء، ولماذا يتكرر، وما دورك فيه.' },
+  { word: 'تغيير', text: 'خطوات عملية واقعية، مبنية على حياتك أنت لا على قوالب جاهزة.' },
+  { word: 'علاقة أفضل', text: 'مع نفسك أولًا… ثم مع شريكك وأبنائك ومن حولك.' },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: 'يحيى فؤاد — استشارات العلاقات الأسرية',
+    url: 'https://yahiafouad.com/',
+    founder: { '@id': 'https://yahiafouad.com/#person' },
+    areaServed: 'EG',
+    address: { '@type': 'PostalAddress', addressLocality: 'Cairo', addressCountry: 'EG' },
+    serviceType: ['استشارات العلاقات الزوجية', 'استشارات تربوية', 'جلسات عائلية', 'تطوير الذات'],
+  },
+];
+---
+
+<BaseLayout
+  title="يحيى فؤاد | استشاري علاقات أسرية — علاقات أهدأ ووعي أعمق"
+  description="يحيى فؤاد، استشاري علاقات أسرية وأب لأربعة أبناء. استشارات في العلاقات الزوجية والتربية وتطوير الذات، ومقالات وورش ومجتمع «رفيق الوعي». احجز استشارتك."
+  headerTone="night"
+  schema={schema}
+>
+  <!-- 01 HERO -->
+  <section class="hero surface-night on-night" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <p class="eyebrow hero__eyebrow" data-reveal>يحيى فؤاد · استشاري علاقات أسرية</p>
+        <h1 id="hero-title" class="hero__title display" data-reveal style="--delay:80ms">
+          علاقاتٌ أهدأ،<br />ووعيٌ أعمق،<br /><span class="hero__accent">وحياةٌ أقرب إلى نفسك.</span>
+        </h1>
+        <p class="hero__lede lead" data-reveal style="--delay:160ms">
+          أساعد الأزواج والآباء والأفراد على فهم أنفسهم وعلاقاتهم بعمق — من الخلافات الزوجية وتربية الأبناء
+          والمراهقين، إلى ترتيب المشاعر والعودة إلى الذات.
+        </p>
+        <div class="hero__actions" data-reveal style="--delay:240ms">
+          <a href={u('/booking-app/')} class="btn btn--light" data-track="cta_book" data-track-loc="hero">احجز استشارتك <span class="arrow" aria-hidden="true">←</span></a>
+          <a href={u('/programs/')} class="btn btn--ghost-light" data-track="cta_programs" data-track-loc="hero">اكتشف برامج يحيى</a>
+        </div>
+        <ul class="hero__facts" role="list" data-reveal style="--delay:320ms">
+          <li><strong>أب لأربعة أبناء</strong><span>يفهم البيت من الداخل</span></li>
+          <li><strong>عشرون عامًا</strong><span>في رحلة الوعي والتعلّم</span></li>
+          <li><strong>ضيف إعلامي</strong><span>برامج تلفزيونية وإذاعية</span></li>
+        </ul>
+      </div>
+      <div class="hero__media fill blend-edges">
+        <Picture
+          src={heroImg}
+          alt="يحيى فؤاد، استشاري العلاقات الأسرية، في جلسة تأمل هادئة"
+          formats={['avif', 'webp']}
+          widths={[380, 560, 720]}
+          sizes="(min-width: 1024px) 40vw, 92vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 THE PROBLEM -->
+  <section class="section problem" aria-labelledby="problem-title">
+    <div class="container problem__grid">
+      <div class="problem__head">
+        <SectionHeader
+          id="problem-title"
+          eyebrow="ربما تعرف هذا الشعور"
+          title="أحيانًا لا تكون المشكلة فيما يحدث… بل في أننا لا نفهم لماذا يتكرر."
+        />
+      </div>
+      <div class="problem__body">
+        <ol class="problem__list" role="list">
+          {problems.map((p, i) => (
+            <li data-reveal style={`--delay:${i * 60}ms`}>
+              <span class="problem__n num" aria-hidden="true">{toArabicDigits(String(i + 1).padStart(2, '0'))}</span>
+              <p>{p}</p>
+            </li>
+          ))}
+        </ol>
+        <div class="problem__close" data-reveal>
+          <p class="lead">إن رأيت نفسك في واحدة منها، فأنت لست وحدك — وهذه بداية جيدة.</p>
+          <a href={u('/booking-app/')} class="link-arrow" data-track="cta_book" data-track-loc="problem">ابدأ بفهم ما تمر به <span class="arrow" aria-hidden="true">←</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 PHILOSOPHY -->
+  <section class="philosophy surface-night on-night" aria-labelledby="philosophy-title">
+    <div class="philosophy__bg fill blend-edges" aria-hidden="true">
+      <Image src={philosophyImg} alt="" widths={[640, 1000, 1292]} sizes="(min-width: 900px) 55vw, 100vw" loading="lazy" />
+    </div>
+    <div class="container philosophy__inner">
+      <p class="eyebrow" data-reveal>فلسفة يحيى</p>
+      <h2 id="philosophy-title" class="philosophy__quote" data-reveal style="--delay:80ms">
+        رسالتي ليست أن أعلّم…<br /><span>بل أن أُذكّر.</span>
+      </h2>
+      <p class="philosophy__follow lead" data-reveal style="--delay:160ms">{brand.messageFollow}</p>
+      <p class="philosophy__approach muted" data-reveal style="--delay:220ms">
+        لا وصفات جاهزة ولا أحكام. أسمعك بعمق، وأساعدك ترى الصورة كاملة، ثم نبني معًا خطوات واقعية وبسيطة تناسب حياتك وبيتك.
+      </p>
+      <ul class="philosophy__mission" role="list" aria-label="المهمة">
+        {brand.mission.map((m, i) => (
+          <li data-reveal style={`--delay:${260 + i * 90}ms`}>
+            <span class="philosophy__from">{m.from}</span>
+            <span class="philosophy__arrow" aria-hidden="true">←</span>
+            <span class="philosophy__to">{m.to}</span>
+          </li>
+        ))}
+      </ul>
+      <a href={u('/about-us/')} class="link-arrow philosophy__cta" data-reveal data-track="cta_about" data-track-loc="philosophy">تعرّف على يحيى <span class="arrow" aria-hidden="true">←</span></a>
+    </div>
+  </section>
+
+  <!-- 04 WHAT I HELP WITH -->
+  <section class="section pillars" aria-labelledby="pillars-title">
+    <div class="container">
+      <SectionHeader
+        id="pillars-title"
+        eyebrow="بماذا أساعدك"
+        title="ثلاث مساحات… وهدف واحد: أن تعود أقرب لنفسك ولمن تحب."
+      />
+      <div class="pillars__grid">
+        {pillars.map((p, i) => <PillarCard pillar={p} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 THE JOURNEY -->
+  <section class="section journey surface-paper-2" aria-labelledby="journey-title">
+    <div class="container">
+      <SectionHeader
+        id="journey-title"
+        eyebrow="الرحلة"
+        title="التغيير الحقيقي لا يبدأ بالنصيحة… بل بالفهم."
+        align="center"
+      />
+      <ol class="journey__steps" role="list">
+        {journey.map((s, i) => (
+          <li class="journey__step" data-reveal style={`--delay:${i * 140}ms`}>
+            <span class="journey__node" aria-hidden="true"></span>
+            <span class="journey__n num" aria-hidden="true">{toArabicDigits(String(i + 1).padStart(2, '0'))}</span>
+            <h3 class="journey__word">{s.word}</h3>
+            <p class="journey__text muted">{s.text}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="journey__cta" data-reveal>
+        <a href={u('/booking-app/')} class="btn" data-track="cta_book" data-track-loc="journey">ابدأ رحلتك <span class="arrow" aria-hidden="true">←</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 OFFERS -->
+  <section class="section offers" aria-labelledby="offers-title">
+    <div class="container">
+      <div class="offers__head">
+        <SectionHeader
+          id="offers-title"
+          eyebrow="طرق العمل مع يحيى"
+          title="ابدأ من المكان المناسب لك."
+          lede="من جلسة خاصة تتعمّق في تحدٍّ محدد، إلى ورش ومجتمع يرافقك في رحلة وعي مستمرة."
+        />
+      </div>
+      <div class="offers__grid">
+        {offers.map((o, i) => <OfferCard offer={o} featured={i === 0} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 SOCIAL PROOF -->
+  <section class="section proof surface-paper-2" aria-labelledby="proof-title">
+    <div class="container">
+      <p class="eyebrow" data-reveal>تجارب حقيقية من الجلسات</p>
+      <h2 id="proof-title" class="sr-only">تجارب العملاء</h2>
+      <figure class="proof__pull" data-reveal style="--delay:80ms">
+        <blockquote><p>«{pull.pull}»</p></blockquote>
+        <figcaption class="muted">— عضو مجهول، من تقييمات الجلسات</figcaption>
+      </figure>
+      <div class="proof__grid" role="list">
+        {featuredReviews.map((t, i) => (
+          <div role="listitem"><TestimonialCard text={t.text} theme={t.theme} index={i} compact /></div>
+        ))}
+      </div>
+      <div class="proof__cta" data-reveal>
+        <a href={u('/ourreviwe/')} class="btn btn--secondary" data-track="cta_reviews" data-track-loc="home">اقرأ كل التجارب <span class="arrow" aria-hidden="true">←</span></a>
+        <p class="caption muted">التقييمات منشورة كما كتبها أصحابها، دون تعديل، ومع الحفاظ على سرّية هويتهم.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 CONTENT -->
+  <section class="section content" aria-labelledby="content-title">
+    <div class="container">
+      <div class="content__head">
+        <SectionHeader id="content-title" eyebrow="من دفتر يحيى" title="أفكار تساعدك تفهم قبل أن تحكم." />
+        <nav class="content__cats" aria-label="تصنيفات المحتوى" data-reveal>
+          <a href={u('/التربية/')} class="tag">التربية</a>
+          <a href={u('/العلاقات/')} class="tag">العلاقات</a>
+          <a href={u('/تطوير-الذات/')} class="tag">تطوير الذات</a>
+        </nav>
+      </div>
+      <div class="content__grid">
+        <ArticleCard article={leadArticle} variant="lead" />
+        <div class="content__list">
+          {moreArticles.slice(0, 3).map((a, i) => <ArticleCard article={a} variant="row" index={i} />)}
+          <a href={u('/articles/')} class="link-arrow content__all" data-track="cta_articles" data-track-loc="home">كل المقالات <span class="arrow" aria-hidden="true">←</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 ABOUT -->
+  <section class="section about surface-paper-2" aria-labelledby="about-title">
+    <div class="container about__grid">
+      <div class="about__media" data-reveal>
+        <div class="frame about__frame parallax">
+          <Picture src={aboutImg} alt="يحيى فؤاد في مساحة مفتوحة" formats={['avif', 'webp']} widths={[360, 589]} sizes="(min-width: 1024px) 34vw, 90vw" loading="lazy" />
+        </div>
+        <Motif kind="self" class="about__motif" />
+      </div>
+      <div class="about__text">
+        <SectionHeader id="about-title" eyebrow="عن يحيى" title="أبٌ قبل أن يكون استشاريًا." />
+        <div class="about__story stack" data-reveal>
+          <p class="lead">
+            أنا يحيى فؤاد، أب لأربعة أبناء. بدأت رحلة الوعي منذ عشرين عامًا، ولم أتوقف عن التعلّم.
+          </p>
+          <p class="muted">
+            بالتوازي مع رحلتي الأكاديمية، اخترت طريقًا غير تقليدي في البحث عن فهمٍ أعمق للإنسان: سافرت وتعلّمت من
+            متخصصين في علوم تمسّ جوهر الإنسان، منها علم النفس المعرفي. ومن قلب هذه الرحلة أسّست مشروع «رفيق» —
+            مجتمعًا واعيًا يحتضن كل من يسعى لفهم ذاته ومرافقة غيره في رحلة العودة لنفسه.
+          </p>
+        </div>
+        <ul class="about__facts" role="list" data-reveal>
+          <li><span class="num">٤</span><span>أبناء — والتربية عندي تجربة يومية قبل أن تكون نصيحة</span></li>
+          <li><span class="num">٢٠</span><span>عامًا من التعلّم في رحلة الوعي</span></li>
+          <li><span class="num">«رفيق»</span><span>مجتمع أسّسه لمرافقة الباحثين عن ذواتهم</span></li>
+        </ul>
+        <a href={u('/about-us/')} class="btn btn--secondary" data-reveal data-track="cta_about" data-track-loc="about">اقرأ قصة يحيى <span class="arrow" aria-hidden="true">←</span></a>
+      </div>
+    </div>
+    <div class="container about__media-strip">
+      <div class="about__strip-head" data-reveal>
+        <h3 class="h3">في الإعلام</h3>
+        <a href={u('/about-us/#media')} class="link-arrow" data-track="cta_media" data-track-loc="home">شاهد المحتوى <span class="arrow" aria-hidden="true">←</span></a>
+      </div>
+      <div class="about__strip">
+        {homeMedia.map((m, i) => <MediaCard title={m.title} kind={m.kind} href={m.href} img={m.image} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 FINAL CTA -->
+  <CtaBand
+    title="يمكن أن تبدأ الخطوة الأولى من هنا."
+    text="مساحة آمنة، وسرّية تامة، وحوار يبدأ من حيث أنت. اختر ما يناسبك، والباقي نمشيه معًا."
+    image={finalImg}
+    imageAlt="يحيى فؤاد يتحدث بيد ممدودة كأنه يدعوك للحوار"
+  />
+</BaseLayout>
+
+<style>
+  /* HERO */
+  .hero { overflow: hidden; }
+  .hero__grid { display: grid; gap: var(--s-6); padding-block: clamp(2rem, 1rem + 4vw, 4rem) 0; }
+  .hero__text { padding-block-end: var(--s-4); }
+  .hero__eyebrow { margin-block-end: var(--s-5); }
+  .hero__title { max-width: 14ch; }
+  .hero__accent { color: var(--sand-on-night); }
+  .hero__lede { margin-block-start: var(--s-5); max-width: 36rem; color: var(--on-night-muted); }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-block-start: var(--s-6); }
+  .hero__facts {
+    list-style: none; padding: 0; margin-block-start: var(--s-7);
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-4);
+    border-top: 1px solid var(--night-line); padding-block-start: var(--s-5);
+  }
+  .hero__facts li { display: grid; gap: 2px; font-size: var(--fs-caption); color: var(--on-night-muted); line-height: 1.6; }
+  .hero__facts strong { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; color: var(--on-night); }
+  .hero__media {
+    position: relative; align-self: end; aspect-ratio: 4 / 5; max-height: min(74vh, 720px);
+    margin-inline: calc(var(--gutter) * -1);
+    --fade-x: 10%;
+  }
+  .hero__media :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__media :global(img) { animation: hero-in 1.6s var(--ease-out) both; }
+    @keyframes hero-in { from { opacity: 0; transform: scale(1.04); } }
+  }
+  @media (min-width: 1024px) {
+    .hero__grid { grid-template-columns: 1.15fr 0.85fr; align-items: stretch; min-height: calc(100svh - var(--header-h)); max-height: 980px; }
+    .hero__text { align-self: center; padding-block: var(--s-7) var(--s-8); }
+    .hero__media {
+      margin-inline: 0 calc(-1 * max(var(--gutter), (100vw - var(--container)) / 2));
+      max-height: none; height: 100%; aspect-ratio: auto;
+      --fade-x: 18%; --fade-t: 0%; --fade-b: 16%;
+    }
+    .hero__media :global(img) { object-position: 50% 12%; }
+  }
+  @media (max-width: 520px) {
+    .hero__actions .btn { flex: 1 1 100%; }
+    .hero__facts { grid-template-columns: 1fr; gap: var(--s-3); }
+    .hero__facts li { grid-template-columns: auto 1fr; align-items: baseline; gap: var(--s-3); }
+    .hero__facts strong { font-size: 1.2rem; }
+  }
+
+  /* PROBLEM */
+  .problem__grid { display: grid; gap: var(--s-7); }
+  .problem__list { list-style: none; padding: 0; counter-reset: p; }
+  .problem__list li {
+    display: grid; grid-template-columns: 3rem 1fr; align-items: baseline; gap: var(--s-4);
+    padding-block: var(--s-5); border-top: 1px solid var(--line);
+  }
+  .problem__list li:last-child { border-bottom: 1px solid var(--line); }
+  .problem__n { color: var(--sand-deep); font-size: 1.1rem; }
+  .problem__list p { font-family: var(--font-display); font-size: clamp(1.5rem, 1.25rem + 1vw, 2.1rem); line-height: 1.45; }
+  .problem__close { margin-block-start: var(--s-6); display: grid; gap: var(--s-3); justify-items: start; }
+  @media (min-width: 1024px) {
+    .problem__grid { grid-template-columns: 0.9fr 1.1fr; gap: var(--s-9); }
+    .problem__head { position: sticky; top: calc(var(--header-h) + var(--s-7)); align-self: start; }
+  }
+
+  /* PHILOSOPHY */
+  .philosophy { position: relative; overflow: hidden; isolation: isolate; }
+  .philosophy__bg {
+    position: absolute; z-index: -1; inset-block: 0; inset-inline-end: 0; width: 100%;
+    --fade-x: 30%; --fade-t: 20%; --fade-b: 25%;
+  }
+  .philosophy__bg :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 42% 25%; opacity: 0.32; }
+  @media (min-width: 900px) {
+    .philosophy__bg { width: 56%; }
+    .philosophy__bg :global(img) { opacity: 0.95; }
+  }
+  .philosophy__inner { padding-block: var(--section); display: grid; gap: var(--s-5); justify-items: start; }
+  .philosophy__quote {
+    font-size: clamp(3rem, 1.8rem + 6vw, 7.4rem); line-height: 1.1; font-weight: 600; max-width: 13ch;
+  }
+  .philosophy__quote span { color: var(--sand-on-night); }
+  .philosophy__follow { max-width: 34rem; color: var(--on-night); }
+  .philosophy__approach { max-width: 34rem; }
+  .philosophy__mission {
+    list-style: none; padding: 0; margin-block-start: var(--s-6); width: 100%; max-width: 46rem;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--night-line);
+  }
+  .philosophy__mission li {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; padding: var(--s-5) 0; padding-inline-end: var(--s-4);
+    font-family: var(--font-display); font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.8rem); line-height: 1.3;
+  }
+  .philosophy__mission li + li { border-inline-start: 1px solid var(--night-line); padding-inline-start: var(--s-4); }
+  .philosophy__from { color: var(--on-night-muted); text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: rgb(179 170 156 / 0.5); }
+  .philosophy__arrow { font-family: var(--font-body); font-size: 0.9rem; color: var(--sand-on-night); }
+  .philosophy__cta { margin-block-start: var(--s-3); }
+  @media (max-width: 640px) {
+    .philosophy__bg :global(img) { object-position: 15% 30%; opacity: 0.35; }
+    .philosophy__mission { grid-template-columns: 1fr; }
+    .philosophy__mission li { grid-template-columns: auto auto 1fr; align-items: baseline; gap: var(--s-3); }
+    .philosophy__mission li + li { border-inline-start: 0; padding-inline-start: 0; border-top: 1px solid var(--night-line); }
+  }
+
+  /* PILLARS */
+  .pillars__grid { display: grid; gap: var(--s-4) var(--s-7); margin-block-start: var(--s-8); }
+  @media (min-width: 900px) { .pillars__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  /* JOURNEY */
+  .journey__steps {
+    list-style: none; padding: 0; margin-block-start: var(--s-8);
+    display: grid; gap: var(--s-6); position: relative;
+  }
+  .journey__step { position: relative; display: grid; gap: var(--s-2); padding-inline-start: var(--s-7); }
+  .journey__node {
+    position: absolute; inset-inline-start: 0; top: 0.9rem; width: 15px; height: 15px; border-radius: 50%;
+    border: 1px solid var(--olive); background: var(--paper-2);
+  }
+  .journey__step::before {
+    content: ''; position: absolute; inset-inline-start: 7px; top: 2rem; bottom: calc(var(--s-6) * -1 - 0.9rem);
+    width: 1px; background: var(--line-strong);
+  }
+  .journey__step:last-child::before { display: none; }
+  .journey__step:last-child .journey__node { background: var(--olive); }
+  .journey__n { font-size: 0.95rem; color: var(--sand-deep); }
+  .journey__word { font-size: clamp(2.8rem, 2rem + 3.4vw, 5rem); line-height: 1; }
+  .journey__step:last-child .journey__word { color: var(--olive-deep); }
+  .journey__text { max-width: 26ch; }
+  .journey__cta { display: flex; justify-content: center; margin-block-start: var(--s-8); }
+  @media (min-width: 900px) {
+    .journey__steps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); }
+    .journey__step { padding-inline-start: 0; padding-block-start: var(--s-7); }
+    .journey__node { top: 0; }
+    .journey__step::before { inset-inline-start: 15px; inset-inline-end: calc(var(--s-5) * -1); top: 7px; bottom: auto; width: auto; height: 1px; }
+  }
+
+  /* OFFERS */
+  .offers__grid { display: grid; gap: var(--s-4); margin-block-start: var(--s-8); }
+  @media (min-width: 800px) { .offers__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* PROOF */
+  .proof__pull { margin-block: var(--s-5) var(--s-8); }
+  .proof__pull blockquote p {
+    font-family: var(--font-display); font-weight: 600; line-height: 1.15;
+    font-size: clamp(3rem, 1.8rem + 5.6vw, 7rem); max-width: 16ch;
+  }
+  .proof__pull figcaption { margin-block-start: var(--s-4); font-size: var(--fs-small); }
+  .proof__grid {
+    display: grid; grid-auto-flow: column; grid-auto-columns: min(86%, 380px); gap: var(--s-4);
+    overflow-x: auto; scroll-snap-type: x mandatory; padding-block-end: var(--s-3);
+    margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scrollbar-width: thin;
+  }
+  .proof__grid > * { scroll-snap-align: start; }
+  .proof__cta { display: grid; gap: var(--s-3); justify-items: start; margin-block-start: var(--s-7); }
+  @media (min-width: 900px) {
+    .proof__grid { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; margin-inline: 0; padding-inline: 0; }
+  }
+
+  /* CONTENT */
+  .content__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--s-5); }
+  .content__cats { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .content__cats .tag { min-height: 40px; padding-inline: 1.1em; font-size: var(--fs-small); text-decoration: none; }
+  .content__cats .tag:hover { border-color: var(--ink); }
+  .content__grid { display: grid; gap: var(--s-7); margin-block-start: var(--s-8); }
+  .content__all { margin-block-start: var(--s-4); }
+  @media (min-width: 1024px) { .content__grid { grid-template-columns: 1.25fr 1fr; gap: var(--s-8); } }
+
+  /* ABOUT */
+  .about__grid { display: grid; gap: var(--s-8); align-items: center; }
+  .about__media { position: relative; max-width: 460px; isolation: isolate; }
+  .about__frame { aspect-ratio: 4 / 5; }
+  .about__frame :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .about__media :global(.about__motif) {
+    position: absolute; width: 180px; inset-inline-end: -64px; bottom: -56px; color: var(--sand-deep); z-index: -1; opacity: 0.8;
+  }
+  @media (max-width: 640px) { .about__media :global(.about__motif) { width: 120px; inset-inline-end: -12px; bottom: -40px; } }
+  .about__text { display: grid; gap: var(--s-6); justify-items: start; }
+  .about__facts { list-style: none; padding: 0; display: grid; gap: 0; width: 100%; }
+  .about__facts li { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--s-4); align-items: baseline; padding-block: var(--s-4); border-top: 1px solid var(--line-strong); }
+  .about__facts .num { font-size: 2.2rem; line-height: 1; color: var(--olive-deep); font-weight: 600; }
+  .about__facts li > span:last-child { color: var(--ink-2); }
+  .about__media-strip { margin-block-start: var(--s-9); }
+  .about__strip-head { display: flex; justify-content: space-between; align-items: center; margin-block-end: var(--s-5); }
+  .about__strip {
+    display: grid; grid-auto-flow: column; grid-auto-columns: min(78%, 340px); gap: var(--s-4);
+    overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); padding-block-end: var(--s-3);
+  }
+  .about__strip > :global(*) { scroll-snap-align: start; }
+  @media (min-width: 900px) {
+    .about__grid { grid-template-columns: 0.85fr 1.15fr; gap: var(--s-9); }
+    .about__strip { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; margin-inline: 0; padding-inline: 0; }
+  }
+</style>

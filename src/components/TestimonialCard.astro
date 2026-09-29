@@ -1,0 +1,39 @@
+---
+/** Verbatim, anonymous testimonial from the live Site Reviews data. */
+interface Props {
+  text: string;
+  theme?: string;
+  index?: number;
+  compact?: boolean;
+}
+const { text, theme, index = 0, compact = false } = Astro.props;
+const themeLabel: Record<string, string> = { personal: 'جلسة فردية', parenting: 'تربية وأسرة', community: 'رفيق الوعي' };
+const paragraphs = text.split('\n').filter(Boolean);
+---
+<figure class:list={['tcard', compact && 'tcard--compact']} data-reveal style={`--delay:${(index % 3) * 90}ms`}>
+  <span class="tcard__mark" aria-hidden="true">”</span>
+  <blockquote class="tcard__quote">
+    {paragraphs.map((p) => <p>{p}</p>)}
+  </blockquote>
+  <figcaption class="tcard__meta">
+    <span class="tcard__who">عضو مجهول</span>
+    <span class="tcard__stars" role="img" aria-label="تقييم ٥ من ٥">★★★★★</span>
+    {theme && <span class="tag">{themeLabel[theme] ?? theme}</span>}
+  </figcaption>
+</figure>
+<style>
+  .tcard {
+    display: flex; flex-direction: column; gap: var(--s-4); height: 100%;
+    padding: clamp(1.5rem, 1.2rem + 1.2vw, 2.2rem); border-radius: var(--radius-l);
+    background: #fbf8f3; border: 1px solid var(--line);
+  }
+  .tcard__mark { font-family: var(--font-display); font-size: 4.5rem; line-height: 0.6; color: var(--sand-deep); height: 2rem; }
+  .tcard__quote { display: grid; gap: var(--s-2); font-size: 1.02rem; line-height: 1.95; color: var(--ink-2); }
+  .tcard--compact .tcard__quote { font-size: 1rem; }
+  .tcard__meta {
+    margin-block-start: auto; padding-block-start: var(--s-4); border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); font-size: var(--fs-small);
+  }
+  .tcard__who { font-weight: 600; }
+  .tcard__stars { color: var(--sand-deep); letter-spacing: 2px; font-size: 0.8rem; }
+</style>

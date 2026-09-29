@@ -1,0 +1,86 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { categories } from '../../data/site';
+import { u, toArabicDigits } from '../../lib/url';
+
+const articles = (await getCollection('articles')).sort((a, b) => +b.data.date - +a.data.date);
+const [lead, ...rest] = articles;
+const counts = Object.fromEntries(
+  Object.keys(categories).map((k) => [k, articles.filter((a) => a.data.category === k).length]),
+);
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'المحتوى — مقالات يحيى فؤاد',
+    inLanguage: 'ar',
+    hasPart: articles.map((a) => ({ '@type': 'Article', headline: a.data.title, datePublished: a.data.date.toISOString() })),
+  },
+];
+---
+
+<BaseLayout
+  title="المحتوى — مقالات في التربية والعلاقات وتطوير الذات"
+  description="مقالات يحيى فؤاد في التربية الواعية والعلاقات وتطوير الذات: عناد الطفل، الكذب، صمت المراهق، الثقة بين الأهل والأبناء، والفرق بين التربية الحديثة وتربية زمان."
+  schema={schema}
+>
+  <section class="ar-head">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'المحتوى' }]} />
+      <div class="ar-head__grid">
+        <div>
+          <p class="eyebrow">من دفتر يحيى</p>
+          <h1 class="display ar-head__title">أفكار تساعدك تفهم قبل أن تحكم.</h1>
+        </div>
+        <nav class="ar-cats" aria-label="تصنيفات">
+          {Object.entries(categories).map(([k, c]) => (
+            <a href={u(c.pillar)} class="ar-cat">
+              <span>{c.label}</span>
+              <span class="num muted">{counts[k] ? toArabicDigits(counts[k]) : 'قريبًا'}</span>
+            </a>
+          ))}
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container">
+      <div class="ar-lead"><ArticleCard article={lead} variant="lead" headingLevel="h2" /></div>
+      <div class="ar-grid">
+        {rest.map((a, i) => <ArticleCard article={a} index={i} headingLevel="h2" />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section surface-paper-2" aria-labelledby="ar-nl">
+    <div class="container-narrow ar-nl">
+      <h2 id="ar-nl" class="h2">مقال جديد… في بريدك.</h2>
+      <p class="muted">اشترك ليصلك كل مقال وورشة جديدة أولًا بأول.</p>
+      <Newsletter source="articles" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .ar-head { padding-block: var(--s-5) var(--s-5); }
+  .ar-head__grid { display: grid; gap: var(--s-6); margin-block-start: var(--s-5); align-items: end; }
+  .ar-head__title { margin-block-start: var(--s-3); max-width: 14ch; }
+  .ar-cats { display: grid; border-top: 1px solid var(--line-strong); }
+  .ar-cat { display: flex; justify-content: space-between; align-items: center; min-height: 56px; border-bottom: 1px solid var(--line-strong); text-decoration: none; font-family: var(--font-display); font-size: 1.5rem; }
+  .ar-cat:hover { color: var(--olive-deep); }
+  .ar-cat .num { font-size: 1rem; font-family: var(--font-body); }
+  @media (min-width: 1024px) { .ar-head__grid { grid-template-columns: 1.3fr 0.7fr; gap: var(--s-9); } }
+  .ar-lead { padding-block-end: var(--s-8); border-bottom: 1px solid var(--line); }
+  @media (min-width: 1024px) {
+    .ar-lead :global(.acard--lead) { grid-template-columns: 1.3fr 1fr; align-items: center; gap: var(--s-7); }
+  }
+  .ar-grid { display: grid; gap: var(--s-8) var(--s-5); margin-block-start: var(--s-8); }
+  @media (min-width: 700px) { .ar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .ar-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .ar-nl { display: grid; gap: var(--s-3); text-align: center; }
+</style>

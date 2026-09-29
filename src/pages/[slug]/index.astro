@@ -1,0 +1,327 @@
+---
+/**
+ * Root-level Arabic URLs, preserved from WordPress:
+ *   /<article-slug>/   → article template (slug = original WP post slug)
+ *   /العلاقات/ /التربية/ /تطوير-الذات/ → pillar template
+ */
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Picture, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import TestimonialCard from '../../components/TestimonialCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Motif from '../../components/Motif.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { pillars, type Pillar } from '../../data/pillars';
+import { categories, sessionTypes, PRODUCTION_ORIGIN } from '../../data/site';
+import testimonials from '../../data/testimonials.json';
+import { u, abs, formatDateAr, toArabicDigits, formatPrice } from '../../lib/url';
+import ctaImg from '../../assets/img/portrait-seated.jpg';
+import pillarImg from '../../assets/img/portrait-speaking.jpg';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('articles');
+  return [
+    ...articles.map((article) => ({ params: { slug: article.data.slug }, props: { kind: 'article' as const, article } })),
+    ...pillars.map((pillar) => ({ params: { slug: pillar.slug }, props: { kind: 'pillar' as const, pillar } })),
+  ];
+}
+
+type Props =
+  | { kind: 'article'; article: CollectionEntry<'articles'>; pillar?: never }
+  | { kind: 'pillar'; pillar: Pillar; article?: never };
+
+const props = Astro.props as Props;
+const all = (await getCollection('articles')).sort((a, b) => +b.data.date - +a.data.date);
+
+let Content: any = null;
+let a: CollectionEntry<'articles'>['data'] | null = null;
+let related: CollectionEntry<'articles'>[] = [];
+let schema: Record<string, unknown>[] = [];
+
+if (props.kind === 'article') {
+  a = props.article.data;
+  ({ Content } = await render(props.article));
+  related = all.filter((x) => x.id !== props.article.id && x.data.category === a!.category).slice(0, 3);
+  const url = abs(`/${a.slug}/`, Astro.site);
+  const schemaImg = a.image ? await getImage({ src: a.image, width: 1200, format: 'jpg' }) : null;
+  schema.push({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: a.title,
+    ...(schemaImg ? { image: new URL(schemaImg.src, Astro.site).href } : {}),
+    description: a.excerpt,
+    datePublished: a.date.toISOString(),
+    dateModified: a.modified.toISOString(),
+    inLanguage: 'ar',
+    mainEntityOfPage: url,
+    articleSection: categories[a.category].label,
+    author: { '@type': 'Person', '@id': `${PRODUCTION_ORIGIN}/#person`, name: 'يحيى فؤاد', url: `${PRODUCTION_ORIGIN}/about-us/` },
+    publisher: { '@type': 'Person', '@id': `${PRODUCTION_ORIGIN}/#person`, name: 'يحيى فؤاد' },
+  });
+  if (a.faq?.length) {
+    schema.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: a.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    });
+  }
+}
+
+const pillar = props.kind === 'pillar' ? props.pillar : null;
+const pillarArticles = pillar ? all.filter((x) => x.data.category === pillar.category) : [];
+const pillarSession = pillar ? sessionTypes.find((s) => s.key === pillar.sessionKey)! : null;
+const pillarReviews = pillar
+  ? testimonials.filter((t) => (pillar.category === 'parenting' ? t.theme === 'parenting' : t.theme === 'personal')).slice(0, 2)
+  : [];
+const otherPillars = pillar ? pillars.filter((p) => p.slug !== pillar.slug) : [];
+if (pillar) {
+  schema.push({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: pillar.title,
+    description: pillar.seoDescription,
+    provider: { '@id': `${PRODUCTION_ORIGIN}/#person` },
+    areaServed: 'EG',
+    inLanguage: 'ar',
+  });
+}
+---
+
+{props.kind === 'article' && a && (
+  <BaseLayout
+    title={a.title}
+    description={a.excerpt}
+    image={a.image}
+    imageAlt={a.imageAlt}
+    type="article"
+    publishedTime={a.date}
+    modifiedTime={a.modified}
+    schema={schema}
+  >
+    <article class="article">
+      <header class="article__head container-narrow">
+        <Breadcrumbs items={[{ label: 'المحتوى', href: '/articles/' }, { label: categories[a.category].label, href: categories[a.category].pillar }, { label: a.title }]} />
+        <p class="article__meta caption">
+          <a href={u(categories[a.category].pillar)} class="article__cat">{categories[a.category].label}</a>
+          <span aria-hidden="true">·</span>
+          <time datetime={a.date.toISOString()}>{formatDateAr(a.date)}</time>
+          <span aria-hidden="true">·</span>
+          <span>{toArabicDigits(a.readingMinutes)} دقائق قراءة</span>
+        </p>
+        <h1 class="article__title">{a.title}</h1>
+        <p class="article__lede lead muted">{a.excerpt}</p>
+        <div class="article__byline">
+          <span class="article__avatar" aria-hidden="true" style={`--mark:url("${u('/logo-mark.png')}")`}></span>
+          <span><strong>يحيى فؤاد</strong><span class="muted small"> — استشاري علاقات أسرية</span></span>
+        </div>
+      </header>
+
+      {a.image && (
+        <figure class="article__hero container">
+          <div class="frame">
+            <Picture src={a.image} alt={a.imageAlt} formats={['avif', 'webp']} widths={[480, 800, 1200, 1600]} sizes="(min-width: 1280px) 1100px, 100vw" loading="eager" fetchpriority="high" />
+          </div>
+        </figure>
+      )}
+
+      <div class="container-narrow article__body">
+        {a.tldr && (
+          <aside class="tldr" aria-label="الإجابة باختصار">
+            <p class="tldr__label">الإجابة باختصار</p>
+            <p set:html={a.tldr} />
+          </aside>
+        )}
+        <div class="prose">
+          <Content />
+        </div>
+
+        <aside class="article-cta on-night" aria-labelledby="article-cta-title">
+          <h2 id="article-cta-title" class="article-cta__title">{a.category === 'parenting' ? 'محتاج تفهم سلوك ابنك بشكل أعمق؟' : 'محتاج تفهم ما تمر به بشكل أعمق؟'}</h2>
+          <p class="article-cta__text">جلسة استشارية واحدة تساعدك تفرّق بين ما يحتاج صبرًا وما يحتاج تدخلًا — وتخرج بخطة عملية واضحة لبيتك.</p>
+          <a href={u(`/booking-app/?intent=${a.category === 'parenting' ? 'parenting' : 'unsure'}`)} class="btn btn--light" data-track="cta_book" data-track-loc="article">احجز استشارتك <span class="arrow" aria-hidden="true">←</span></a>
+        </aside>
+
+        <div class="article__share">
+          <p class="small muted">شارك المقال مع من يحتاجه:</p>
+          <div class="article__share-links">
+            <a class="btn btn--secondary btn--sm" href={`https://api.whatsapp.com/send?text=${encodeURIComponent(a.title + ' ' + abs(`/${a.slug}/`, Astro.site))}`} target="_blank" rel="noopener">واتساب</a>
+            <a class="btn btn--secondary btn--sm" href={`https://www.facebook.com/sharer.php?u=${encodeURIComponent(abs(`/${a.slug}/`, Astro.site))}`} target="_blank" rel="noopener">فيسبوك</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    {related.length > 0 && (
+      <section class="section surface-paper-2" aria-labelledby="related-title">
+        <div class="container">
+          <h2 id="related-title" class="h2">اقرأ أيضًا</h2>
+          <div class="related-grid">
+            {related.map((r, i) => <ArticleCard article={r} index={i} />)}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section class="section-tight" aria-labelledby="nl-title">
+      <div class="container-narrow nl-block">
+        <h2 id="nl-title" class="h3">مقال جديد كل فترة… في بريدك</h2>
+        <p class="muted">اشترك لتصلك المقالات والورش الجديدة أولًا بأول.</p>
+        <Newsletter source="article" />
+      </div>
+    </section>
+  </BaseLayout>
+)}
+
+{pillar && pillarSession && (
+  <BaseLayout title={pillar.seoTitle} description={pillar.seoDescription} image={pillarImg} schema={schema}>
+    <section class="pillar-hero">
+      <div class="container pillar-hero__grid">
+        <div class="pillar-hero__text">
+          <Breadcrumbs items={[{ label: 'بماذا أساعدك', href: '/consultations/' }, { label: pillar.title }]} />
+          <p class="eyebrow">{pillar.number} · {pillar.kicker}</p>
+          <h1 class="display">{pillar.title}</h1>
+          <p class="lead muted pillar-hero__summary">{pillar.summary}</p>
+          <div class="pillar-hero__actions">
+            <a href={u(`/booking-app/?intent=${pillar.intent}`)} class="btn" data-track="cta_book" data-track-loc={`pillar_${pillar.category}`}>احجز استشارتك <span class="arrow" aria-hidden="true">←</span></a>
+            <a href="#pillar-articles" class="btn btn--secondary">اقرأ المقالات</a>
+          </div>
+        </div>
+        <div class="pillar-hero__motif" aria-hidden="true"><Motif kind={pillar.motif} /></div>
+      </div>
+    </section>
+
+    <section class="section-tight" aria-labelledby="pillar-intro">
+      <div class="container pillar-intro">
+        <h2 id="pillar-intro" class="sr-only">عن {pillar.title}</h2>
+        <div class="pillar-intro__text stack" style="--stack: var(--s-5)">
+          {pillar.intro.map((p, i) => <p class:list={[i === 0 ? 'pillar-intro__first' : 'lead muted']} data-reveal>{p}</p>)}
+        </div>
+        <div class="pillar-signs" data-reveal>
+          <h3 class="h3">هل تمر بهذا؟</h3>
+          <ul role="list">
+            {pillar.signs.map((s) => <li>{s}</li>)}
+          </ul>
+          <div class="pillar-signs__session">
+            <p class="caption muted">الجلسة الأنسب للبداية</p>
+            <p class="pillar-signs__name">{pillarSession.name} <span class="muted small">· ٦٠ دقيقة · من {formatPrice(pillarSession.priceFallback)}</span></p>
+            <p class="small muted">{pillarSession.forWho}</p>
+            <a href={u(`/booking-app/?intent=${pillar.intent}`)} class="link-arrow" data-track="cta_book" data-track-loc={`pillar_signs_${pillar.category}`}>ابدأ الحجز <span class="arrow" aria-hidden="true">←</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section surface-paper-2" id="pillar-articles" aria-labelledby="pa-title">
+      <div class="container">
+        <p class="eyebrow">من دفتر يحيى</p>
+        <h2 id="pa-title" class="h2">مقالات في {pillar.title}</h2>
+        {pillarArticles.length > 0 ? (
+          <div class="related-grid">
+            {pillarArticles.map((r, i) => <ArticleCard article={r} index={i} />)}
+          </div>
+        ) : (
+          <div class="empty-state" data-reveal>
+            <p class="lead">مقالات هذا القسم قيد الكتابة.</p>
+            <p class="muted">اشترك ليصلك أول مقال فور نشره، أو ابدأ بما نُشر في التربية.</p>
+            <Newsletter source={`pillar_${pillar.category}`} />
+            <a href={u('/articles/')} class="link-arrow">كل المقالات <span class="arrow" aria-hidden="true">←</span></a>
+          </div>
+        )}
+      </div>
+    </section>
+
+    {pillarReviews.length > 0 && (
+      <section class="section" aria-labelledby="pr-title">
+        <div class="container">
+          <p class="eyebrow">تجارب حقيقية</p>
+          <h2 id="pr-title" class="h2">بكلمات من جرّبوا</h2>
+          <div class="reviews-2">
+            {pillarReviews.map((t, i) => <TestimonialCard text={t.text} theme={t.theme} index={i} />)}
+          </div>
+          <a href={u('/ourreviwe/')} class="link-arrow" style="margin-block-start: var(--s-5)">كل التجارب <span class="arrow" aria-hidden="true">←</span></a>
+        </div>
+      </section>
+    )}
+
+    <section class="section-tight other-pillars" aria-label="مساحات أخرى">
+      <div class="container other-pillars__grid">
+        {otherPillars.map((p) => (
+          <a href={u(`/${p.slug}/`)} class="other-pillar">
+            <span class="other-pillar__motif" aria-hidden="true"><Motif kind={p.motif} /></span>
+            <span><span class="caption muted">{p.number}</span><span class="other-pillar__title">{p.title}</span></span>
+            <span class="arrow" aria-hidden="true">←</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <CtaBand title="ابدأ من حيث أنت." text="جلسة مدتها ساعة، بسرّية تامة، تخرج منها بفهم أوضح وخطوات عملية." image={ctaImg} imageAlt="يحيى فؤاد جالسًا يستمع باهتمام" />
+  </BaseLayout>
+)}
+
+<style>
+  /* ARTICLE */
+  .article__head { padding-block: var(--s-7) var(--s-6); display: grid; gap: var(--s-4); }
+  .article__meta { display: flex; flex-wrap: wrap; gap: 0.5em; color: var(--muted); margin-block-start: var(--s-3); }
+  .article__cat { color: var(--olive-deep); font-weight: 600; text-decoration: none; }
+  .article__title { font-size: var(--fs-h1); line-height: 1.2; }
+  .article__byline { display: flex; align-items: center; gap: var(--s-3); padding-block-start: var(--s-3); border-top: 1px solid var(--line); }
+  .article__avatar {
+    width: 40px; height: 44px; background: var(--ink);
+    -webkit-mask: var(--mark) center / contain no-repeat; mask: var(--mark) center / contain no-repeat;
+  }
+  .article__hero { margin-block-end: var(--s-7); }
+  .article__hero .frame { aspect-ratio: 16 / 9; max-width: 1100px; margin-inline: auto; }
+  .article__body { padding-block-end: var(--s-8); }
+  .tldr {
+    background: var(--olive-soft); border-radius: var(--radius); padding: var(--s-5) var(--s-5);
+    margin-block-end: var(--s-7); line-height: 1.95; color: var(--ink-2);
+    border-inline-start: 3px solid var(--olive);
+  }
+  .tldr__label { font-weight: 600; color: var(--olive-deep); margin-block-end: var(--s-2); font-size: var(--fs-small); }
+  .article-cta {
+    margin-block: var(--s-8) var(--s-6); padding: clamp(1.75rem, 1.2rem + 2vw, 3rem);
+    background: var(--night); color: var(--on-night); border-radius: var(--radius-l); display: grid; gap: var(--s-4); justify-items: start;
+  }
+  .article-cta__title { font-size: var(--fs-h3); }
+  .article-cta__text { color: var(--on-night-muted); }
+  .article__share { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3); padding-block-start: var(--s-5); border-top: 1px solid var(--line); }
+  .article__share-links { display: flex; gap: var(--s-2); }
+  .related-grid { display: grid; gap: var(--s-7) var(--s-5); margin-block-start: var(--s-6); }
+  @media (min-width: 700px) { .related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .related-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .nl-block { display: grid; gap: var(--s-2); text-align: center; }
+
+  /* PILLAR */
+  .pillar-hero { padding-block: var(--s-6) var(--s-7); overflow: hidden; }
+  .pillar-hero__grid { display: grid; gap: var(--s-6); align-items: center; }
+  .pillar-hero__text { display: grid; gap: var(--s-4); justify-items: start; }
+  .pillar-hero__summary { max-width: 36rem; }
+  .pillar-hero__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-block-start: var(--s-3); }
+  .pillar-hero__motif { width: min(60vw, 360px); color: var(--olive); justify-self: center; }
+  @media (min-width: 900px) { .pillar-hero__grid { grid-template-columns: 1.3fr 0.7fr; } }
+  .pillar-intro { display: grid; gap: var(--s-8); }
+  .pillar-intro__first { font-family: var(--font-display); font-size: clamp(1.7rem, 1.3rem + 1.5vw, 2.5rem); line-height: 1.45; }
+  .pillar-signs { background: #fbf8f3; border: 1px solid var(--line); border-radius: var(--radius-l); padding: clamp(1.5rem, 1rem + 2vw, 2.5rem); align-self: start; }
+  .pillar-signs ul { list-style: none; padding: 0; margin-block: var(--s-4); }
+  .pillar-signs li { padding-block: var(--s-3); border-top: 1px solid var(--line); padding-inline-start: 1.6em; position: relative; }
+  .pillar-signs li::before { content: ''; position: absolute; inset-inline-start: 0; top: 1.35em; width: 8px; height: 8px; border: 1px solid var(--olive); border-radius: 50%; }
+  .pillar-signs__session { display: grid; gap: var(--s-1); padding-block-start: var(--s-4); border-top: 1px solid var(--line-strong); }
+  .pillar-signs__name { font-family: var(--font-display); font-size: 1.6rem; }
+  @media (min-width: 1024px) { .pillar-intro { grid-template-columns: 1.2fr 0.8fr; } }
+  .empty-state { margin-block-start: var(--s-6); max-width: 36rem; display: grid; gap: var(--s-3); }
+  .reviews-2 { display: grid; gap: var(--s-4); margin-block-start: var(--s-6); }
+  @media (min-width: 800px) { .reviews-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .other-pillars__grid { display: grid; gap: var(--s-3); }
+  @media (min-width: 700px) { .other-pillars__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .other-pillar {
+    display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: var(--s-4);
+    padding: var(--s-4) var(--s-5); border: 1px solid var(--line); border-radius: var(--radius); text-decoration: none;
+    transition: border-color var(--dur);
+  }
+  .other-pillar:hover { border-color: var(--ink); }
+  .other-pillar__motif { color: var(--olive); }
+  .other-pillar__title { display: block; font-family: var(--font-display); font-size: 1.7rem; line-height: 1.2; }
+</style>

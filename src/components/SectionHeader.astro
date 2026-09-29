@@ -1,0 +1,24 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lede?: string;
+  level?: 'h1' | 'h2';
+  align?: 'start' | 'center';
+  id?: string;
+  size?: 'h1' | 'h2';
+}
+const { eyebrow, title, lede, level = 'h2', align = 'start', id, size = level } = Astro.props;
+const Tag = level;
+---
+<header class:list={['section-header', `section-header--${align}`]} data-reveal>
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <Tag id={id} class:list={['section-header__title', size]} set:html={title} />
+  {lede && <p class="section-header__lede lead muted">{lede}</p>}
+  <slot />
+</header>
+<style>
+  .section-header { display: grid; gap: var(--s-4); max-width: 44rem; align-content: start; }
+  .section-header--center { margin-inline: auto; text-align: center; justify-items: center; }
+  .section-header__lede { max-width: 38rem; }
+</style>

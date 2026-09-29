@@ -1,0 +1,167 @@
+---
+/**
+ * Ecosystem hub: programs, workshops, community. Structured so new programs
+ * or workshops are added as data (offers / workshops arrays) — no redesign.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import TestimonialCard from '../../components/TestimonialCard.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Motif from '../../components/Motif.astro';
+import { live, brand } from '../../data/site';
+import testimonials from '../../data/testimonials.json';
+import { u } from '../../lib/url';
+import ctaImg from '../../assets/img/portrait-speaking.jpg';
+
+const ladder = [
+  { n: '٠١', t: 'المحتوى', d: 'مقالات مجانية تساعدك تفهم قبل أن تحكم.', href: '/articles/', cta: 'اقرأ المقالات' },
+  { n: '٠٢', t: 'الاستشارات', d: 'جلسة خاصة لتحدٍّ محدد في حياتك أو بيتك.', href: '/consultations/', cta: 'احجز استشارتك' },
+  { n: '٠٣', t: 'البرامج', d: 'تعلّم منظم بالسرعة التي تناسبك.', href: '#programs', cta: 'انضم لقائمة الانتظار' },
+  { n: '٠٤', t: 'الورش', d: 'ورش عملية قصيرة حول موقف واحد من حياة البيت.', href: '#workshops', cta: 'سجّل في الورشة' },
+  { n: '٠٥', t: brand.community, d: 'مجتمع يرافقك في رحلة الوعي.', href: '#community', cta: 'انضم للمجتمع' },
+];
+
+const workshop = {
+  status: 'ورشة مجانية',
+  title: 'ابني ناكر الجميل… ولا أنا نسيت أعلّمه التقدير؟',
+  intro:
+    'ورشة عملية تساعدك تفهم الفرق بين إنك تكون أب/أم داعم… وإنك تتحول بدون ما تقصد إلى شخص بيعمل كل حاجة بدل ابنك.',
+  outcomes: [
+    'إزاي تفرّق بين احتياج ابنك وبين اعتماده الزائد عليك.',
+    'إزاي تستخدم الحدود بدون قسوة.',
+    'إزاي تبدأ تبني المسؤولية والامتنان بالتدريج.',
+    '3 تغييرات عملية تبدأ بها في البيت.',
+  ],
+  how: 'التسجيل مجاني بالكامل، ويُرسل رابط الورشة على جروب الواتساب بعد التسجيل.',
+  href: live.workshop,
+};
+
+const communityReviews = testimonials.filter((t) => t.theme === 'community');
+---
+
+<BaseLayout
+  title="البرامج والورش ومجتمع رفيق الوعي"
+  description="اكتشف طرق التعلّم مع يحيى فؤاد: ورش عملية مجانية للآباء والأمهات، برامج مسجّلة قيد الإعداد، ومجتمع «رفيق الوعي» لمن يسعى لفهم ذاته."
+>
+  <section class="pg-head">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'البرامج' }]} />
+      <p class="eyebrow pg-head__eyebrow">البرامج · الورش · المجتمع</p>
+      <h1 class="display pg-head__title">الوعي رحلة… وليس جلسة واحدة.</h1>
+      <p class="lead muted pg-head__lede">اختر المساحة التي تناسب مرحلتك الآن — من مقال مجاني، إلى ورشة عملية، إلى مجتمع يرافقك في الطريق.</p>
+    </div>
+  </section>
+
+  <section class="section-tight" aria-labelledby="ladder-title">
+    <div class="container">
+      <h2 id="ladder-title" class="sr-only">مسارات العمل مع يحيى</h2>
+      <ol class="ladder" role="list">
+        {ladder.map((l, i) => (
+          <li class="ladder__step" data-reveal style={`--delay:${i * 80}ms`}>
+            <span class="ladder__n num" aria-hidden="true">{l.n}</span>
+            <h3 class="ladder__t">{l.t}</h3>
+            <p class="ladder__d muted small">{l.d}</p>
+            <a href={l.href.startsWith('#') ? l.href : u(l.href)} class="link-arrow small">{l.cta} <span class="arrow" aria-hidden="true">←</span></a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section surface-night on-night" id="workshops" aria-labelledby="ws-title">
+    <div class="container ws">
+      <div class="ws__text">
+        <p class="eyebrow">الورش · الورشة الحالية</p>
+        <span class="tag ws__tag">{workshop.status}</span>
+        <h2 id="ws-title" class="ws__title">{workshop.title}</h2>
+        <p class="lead ws__intro">{workshop.intro}</p>
+        <a href={workshop.href} class="btn btn--light" rel="noopener" data-track="workshop_register" data-track-loc="programs">سجّل في الورشة مجانًا <span class="arrow" aria-hidden="true">←</span></a>
+        <p class="caption muted">{workshop.how}</p>
+      </div>
+      <div class="ws__card" data-reveal>
+        <p class="ws__card-title">هتخرج منها فاهم:</p>
+        <ul role="list">
+          {workshop.outcomes.map((o) => <li>{o}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="programs" aria-labelledby="prog-title">
+    <div class="container prog">
+      <div class="prog__motif" aria-hidden="true"><Motif kind="journey" /></div>
+      <div class="prog__text">
+        <SectionHeader id="prog-title" eyebrow="البرامج المسجّلة · قريبًا" title="برامج تتعلّمها في وقتك، وترجع لها متى احتجت." />
+        <p class="muted" data-reveal>
+          نعمل على برامج مسجّلة في العلاقات والتربية، مبنية على نفس فلسفة الجلسات: فهم أولًا، ثم وعي، ثم خطوات عملية تطبّقها في بيتك.
+          سجّل بريدك لتكون أول من يعرف عند الإطلاق.
+        </p>
+        <div data-reveal><Newsletter source="programs_waitlist" /></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section surface-paper-2" id="community" aria-labelledby="com-title">
+    <div class="container com">
+      <div class="com__text">
+        <SectionHeader id="com-title" eyebrow="المجتمع" title={`${brand.community}`} />
+        <p class="lead" data-reveal>مجتمع واعٍ يحتضن كل من يسعى لفهم ذاته، وشفاء جروحه، ومرافقة غيره في رحلة العودة لنفسه.</p>
+        <p class="muted" data-reveal>«رفيق» نداء لكل من تعب من السطحية، واشتاق للعمق… لكل من فقد بوصلته، ويريد أن يجد الطريق إلى ذاته الحقيقية من جديد.</p>
+        <div data-reveal>
+          <p class="small com__join">انضم لقائمة رفيق ليصلك موعد اللقاءات والأنشطة القادمة:</p>
+          <Newsletter source="community" />
+        </div>
+      </div>
+      <div class="com__reviews">
+        {communityReviews.map((t, i) => <TestimonialCard text={t.text} theme={t.theme} index={i} compact />)}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title="تحتاج بداية أسرع؟" text="الجلسة الخاصة هي أقرب طريق لفهم ما تمر به الآن." image={ctaImg} imageAlt="يحيى فؤاد يتحدث بحماس" secondary={{ label: 'اقرأ المقالات', href: '/articles/' }} />
+</BaseLayout>
+
+<style>
+  .pg-head { padding-block: var(--s-5) var(--s-6); }
+  .pg-head__eyebrow { margin-block-start: var(--s-5); }
+  .pg-head__title { margin-block-start: var(--s-3); max-width: 13ch; }
+  .pg-head__lede { margin-block-start: var(--s-5); max-width: 38rem; }
+
+  .ladder { list-style: none; padding: 0; display: grid; gap: var(--s-3); counter-reset: l; }
+  .ladder__step { display: grid; gap: var(--s-2); align-content: start; padding: var(--s-5); border: 1px solid var(--line); border-radius: var(--radius); background: #fbf8f3; }
+  .ladder__n { color: var(--sand-deep); }
+  .ladder__t { font-size: 1.7rem; }
+  @media (min-width: 700px) { .ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1100px) {
+    .ladder { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s-2); }
+    .ladder__step:nth-child(2) { margin-block-start: var(--s-5); }
+    .ladder__step:nth-child(3) { margin-block-start: var(--s-7); }
+    .ladder__step:nth-child(4) { margin-block-start: var(--s-8); }
+    .ladder__step:nth-child(5) { margin-block-start: calc(var(--s-8) + var(--s-5)); }
+  }
+
+  .ws { display: grid; gap: var(--s-7); align-items: center; }
+  .ws__text { display: grid; gap: var(--s-4); justify-items: start; }
+  .ws__tag { background: rgb(217 194 155 / 0.16); color: var(--sand-on-night); border-color: transparent; }
+  .ws__title { font-size: var(--fs-h1); line-height: 1.2; max-width: 16ch; }
+  .ws__intro { color: var(--on-night-muted); max-width: 36rem; }
+  .ws__card { background: var(--night-2); border: 1px solid var(--night-line); border-radius: var(--radius-l); padding: clamp(1.5rem, 1rem + 2vw, 2.5rem); }
+  .ws__card-title { font-family: var(--font-display); font-size: 1.7rem; margin-block-end: var(--s-4); }
+  .ws__card ul { list-style: none; padding: 0; display: grid; }
+  .ws__card li { padding-block: var(--s-3); border-top: 1px solid var(--night-line); padding-inline-start: 1.8em; position: relative; }
+  .ws__card li::before { content: '✓'; position: absolute; inset-inline-start: 0; color: var(--sand-on-night); }
+  @media (min-width: 1024px) { .ws { grid-template-columns: 1.1fr 0.9fr; gap: var(--s-9); } }
+
+  .prog { display: grid; gap: var(--s-7); align-items: center; }
+  .prog__motif { width: min(70%, 320px); color: var(--olive); justify-self: center; }
+  .prog__text { display: grid; gap: var(--s-5); max-width: 40rem; }
+  @media (min-width: 1024px) { .prog { grid-template-columns: 0.7fr 1.3fr; } }
+
+  .com { display: grid; gap: var(--s-7); }
+  .com__text { display: grid; gap: var(--s-4); align-content: start; }
+  .com__join { margin-block-start: var(--s-3); font-weight: 600; }
+  .com__reviews { display: grid; gap: var(--s-4); }
+  @media (min-width: 1024px) { .com { grid-template-columns: 1fr 1fr; gap: var(--s-9); } }
+</style>

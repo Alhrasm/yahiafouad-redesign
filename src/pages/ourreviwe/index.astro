@@ -1,0 +1,107 @@
+---
+/** Testimonials (URL preserved: /ourreviwe/). All reviews verbatim & anonymous. */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TestimonialCard from '../../components/TestimonialCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import testimonials from '../../data/testimonials.json';
+import { toArabicDigits } from '../../lib/url';
+import ctaImg from '../../assets/img/portrait-open.jpg';
+
+const pulls = testimonials.filter((t) => t.pull).slice(0, 4);
+const filters = [
+  { key: 'all', label: 'كل التجارب' },
+  { key: 'personal', label: 'جلسات فردية' },
+  { key: 'parenting', label: 'تربية وأسرة' },
+  { key: 'community', label: 'رفيق الوعي' },
+];
+const count = (k: string) => (k === 'all' ? testimonials.length : testimonials.filter((t) => t.theme === k).length);
+---
+
+<BaseLayout
+  title="تجارب العملاء — آراء حقيقية في جلسات يحيى فؤاد"
+  description="تجارب حقيقية كتبها أصحابها بعد جلسات يحيى فؤاد ومجتمع رفيق الوعي، منشورة كما هي مع الحفاظ على سرّية هويتهم."
+>
+  <section class="rv-head">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'تجارب العملاء' }]} />
+      <p class="eyebrow rv-head__eyebrow">تجارب العملاء</p>
+      <h1 class="display rv-head__title">كل رحلة فيها رسالة.</h1>
+      <div class="rv-head__intro">
+        <p class="lead">
+          على مدار الجلسات نقابل ناسًا يخوضون تحديات مختلفة… كل واحد يأتي وهو يحمل قصة، أو تعبًا، أو حتى أملًا صغيرًا في التغيير.
+          في المساحة الآمنة التي نبنيها معًا، يكتشف كل شخص أن مجرد الكلام يفرق، وأن الفهم الحقيقي أثره أعمق من أي نصيحة عابرة.
+        </p>
+        <p class="muted">
+          التقييمات هنا ليست مجرد انطباعات… بل تجارب حقيقية من أشخاص اختاروا أن يأخذوا خطوة ناحيتهم، وناحية من يحبون، وناحية السلام الداخلي.
+          ننشرها كما كتبها أصحابها، دون تعديل، ومع الحفاظ على سرّية هويتهم.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rv-pulls surface-night on-night" aria-label="مقتطفات">
+    <div class="container rv-pulls__track">
+      {pulls.map((t) => (
+        <blockquote class="rv-pull"><p>«{t.pull}»</p></blockquote>
+      ))}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="rv-all">
+    <div class="container">
+      <div class="rv-bar">
+        <h2 id="rv-all" class="h3">{toArabicDigits(testimonials.length)} تجربة منشورة</h2>
+        <div class="rv-filters" role="group" aria-label="تصفية التجارب" data-filters>
+          {filters.map((f, i) => (
+            <button type="button" class="rv-filter" aria-pressed={i === 0 ? 'true' : 'false'} data-filter={f.key}>
+              {f.label} <span class="num">{toArabicDigits(count(f.key))}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div class="rv-grid" data-grid>
+        {testimonials.map((t, i) => (
+          <div class="rv-item" data-theme={t.theme}><TestimonialCard text={t.text} theme={t.theme} index={i} /></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title="قصتك قد تكون التالية." text="خطوة واحدة تكفي لتبدأ. احجز جلستك في مساحة آمنة وسرّية تامة." image={ctaImg} imageAlt="يحيى فؤاد يدعوك للحوار" />
+</BaseLayout>
+
+<script>
+  const group = document.querySelector<HTMLElement>('[data-filters]');
+  const items = document.querySelectorAll<HTMLElement>('.rv-item');
+  group?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-filter]');
+    if (!b) return;
+    group.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    const k = b.dataset.filter;
+    items.forEach((it) => (it.hidden = k !== 'all' && it.dataset.theme !== k));
+  });
+</script>
+
+<style>
+  .rv-head { padding-block: var(--s-5) var(--s-7); }
+  .rv-head__eyebrow { margin-block-start: var(--s-5); }
+  .rv-head__title { margin-block-start: var(--s-3); }
+  .rv-head__intro { display: grid; gap: var(--s-4); margin-block-start: var(--s-6); max-width: 46rem; }
+
+  .rv-pulls { padding-block: var(--s-8); overflow: hidden; }
+  .rv-pulls__track { display: grid; gap: var(--s-6); }
+  .rv-pull p { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.9rem, 1.4rem + 2.2vw, 3.2rem); line-height: 1.3; }
+  .rv-pull:nth-child(even) p { color: var(--sand-on-night); }
+  @media (min-width: 900px) { .rv-pulls__track { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-7) var(--s-9); } }
+
+  .rv-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s-4); margin-block-end: var(--s-6); }
+  .rv-filters { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .rv-filter { min-height: 44px; padding: 0 1.1em; border-radius: 999px; border: 1px solid var(--line-strong); background: transparent; font-size: var(--fs-small); font-weight: 500; display: inline-flex; gap: 0.5em; align-items: center; }
+  .rv-filter .num { opacity: 0.6; }
+  .rv-filter[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .rv-grid { columns: 1; column-gap: var(--s-4); }
+  .rv-item { break-inside: avoid; margin-block-end: var(--s-4); }
+  @media (min-width: 700px) { .rv-grid { columns: 2; } }
+  @media (min-width: 1100px) { .rv-grid { columns: 3; } }
+</style>

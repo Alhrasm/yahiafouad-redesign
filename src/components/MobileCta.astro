@@ -1,0 +1,19 @@
+---
+import { u } from '../lib/url';
+---
+<div class="mobile-cta" data-mobile-cta aria-hidden="true">
+  <a href={u('/booking-app/')} class="btn btn--block" tabindex="-1" data-track="cta_book" data-track-loc="mobile_sticky">
+    احجز استشارتك <span class="arrow" aria-hidden="true">←</span>
+  </a>
+</div>
+<style>
+  .mobile-cta {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 40;
+    padding: var(--s-3) var(--gutter) calc(var(--s-3) + env(safe-area-inset-bottom));
+    background: rgb(245 241 234 / 0.94); border-top: 1px solid var(--line);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transform: translateY(110%); transition: transform 380ms var(--ease-out);
+  }
+  .mobile-cta.is-visible { transform: none; }
+  @media (min-width: 1024px) { .mobile-cta { display: none; } }
+</style>

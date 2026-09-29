@@ -1,0 +1,30 @@
+---
+/** Line motifs derived from the logo's open circle. Used as pillar visuals. */
+interface Props { kind: 'relationships' | 'parenting' | 'self' | 'journey'; class?: string }
+const { kind, class: cls } = Astro.props;
+---
+<svg class:list={['motif', cls]} viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true" focusable="false">
+  {kind === 'relationships' && (<>
+    <circle cx="62" cy="80" r="44" />
+    <circle cx="98" cy="80" r="44" />
+    <path d="M80 44 Q 92 80 80 116" stroke-dasharray="2 4" />
+  </>)}
+  {kind === 'parenting' && (<>
+    <circle cx="72" cy="78" r="52" />
+    <circle cx="112" cy="112" r="20" />
+    <circle cx="72" cy="78" r="3" fill="currentColor" stroke="none" />
+    <circle cx="112" cy="112" r="2" fill="currentColor" stroke="none" />
+  </>)}
+  {kind === 'self' && (<>
+    <path d="M128 60 A 54 54 0 1 1 100 30" />
+    <circle cx="80" cy="80" r="26" stroke-dasharray="2 5" />
+    <circle cx="80" cy="80" r="3.5" fill="currentColor" stroke="none" />
+  </>)}
+  {kind === 'journey' && (<>
+    <path d="M20 80 H140" stroke-dasharray="2 5" />
+    <circle cx="80" cy="80" r="40" />
+  </>)}
+</svg>
+<style>
+  .motif { width: 100%; height: auto; overflow: visible; }
+</style>

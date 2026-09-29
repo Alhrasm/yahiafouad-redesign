@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { contact } from '../../data/site';
+import { u } from '../../lib/url';
+---
+
+<BaseLayout
+  title="تواصل مع يحيى فؤاد"
+  description="تواصل مع فريق يحيى فؤاد عبر البريد الإلكتروني أو الهاتف، أو احجز استشارتك مباشرة."
+>
+  <section class="ct">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'تواصل معنا' }]} />
+      <div class="ct__grid">
+        <div class="ct__intro">
+          <p class="eyebrow">تواصل</p>
+          <h1 class="display">يسعدنا أن نسمع منك.</h1>
+          <p class="lead muted">لحجز جلسة، الطريق الأسرع هو صفحة الحجز. ولأي استفسار آخر، راسلنا مباشرة.</p>
+          <a href={u('/booking-app/')} class="btn" data-track="cta_book" data-track-loc="contact">احجز استشارتك <span class="arrow" aria-hidden="true">←</span></a>
+        </div>
+        <ul class="ct__channels" role="list">
+          <li>
+            <span class="caption muted">البريد الإلكتروني</span>
+            <a href={`mailto:${contact.email}`} class="ct__value en" data-track="contact_email">{contact.email}</a>
+          </li>
+          <li>
+            <span class="caption muted">الهاتف</span>
+            <a href={`tel:${contact.phoneIntl}`} class="ct__value en" data-track="contact_phone">{contact.phoneDisplay}</a>
+          </li>
+          <li>
+            <span class="caption muted">الموقع</span>
+            <span class="ct__value">{contact.locationAr}</span>
+          </li>
+          <li>
+            <span class="caption muted">النشرة البريدية</span>
+            <Newsletter source="contact" />
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .ct { padding-block: var(--s-5) var(--section); }
+  .ct__grid { display: grid; gap: var(--s-8); margin-block-start: var(--s-6); }
+  .ct__intro { display: grid; gap: var(--s-5); justify-items: start; align-content: start; }
+  .ct__channels { list-style: none; padding: 0; border-top: 1px solid var(--line-strong); }
+  .ct__channels li { display: grid; gap: var(--s-1); padding-block: var(--s-5); border-bottom: 1px solid var(--line-strong); }
+  .ct__value { font-family: var(--font-display); font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.3rem); text-decoration: none; }
+  a.ct__value:hover { color: var(--olive-deep); }
+  .ct__value.en { font-family: var(--font-body); font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.6rem); text-align: end; }
+  @media (min-width: 1024px) { .ct__grid { grid-template-columns: 1fr 1fr; gap: var(--s-9); } }
+</style>

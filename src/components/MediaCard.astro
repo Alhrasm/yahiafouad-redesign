@@ -1,0 +1,29 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+interface Props { title: string; kind: string; href: string; img: ImageMetadata; index?: number }
+const { title, kind, href, img, index = 0 } = Astro.props;
+---
+<a class="mcard" href={href} target="_blank" rel="noopener" data-reveal style={`--delay:${(index % 3) * 80}ms`} data-track="media_click" data-track-loc={title}>
+  <span class="mcard__media frame">
+    <Image src={img} alt={`يحيى فؤاد في ${title}`} widths={[360, 560, 800]} sizes="(min-width: 1024px) 24vw, (min-width: 640px) 45vw, 80vw" loading="lazy" />
+    <span class="mcard__play" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5.5v13l10-6.5z" /></svg>
+    </span>
+  </span>
+  <span class="mcard__meta"><span class="caption muted">{kind}</span><span class="mcard__title">{title}</span></span>
+  <span class="sr-only">(يفتح في نافذة جديدة)</span>
+</a>
+<style>
+  .mcard { display: grid; gap: var(--s-3); text-decoration: none; color: inherit; }
+  .mcard__media { aspect-ratio: 16 / 10; border-radius: var(--radius); }
+  .mcard__media :global(img) { filter: saturate(0.75) contrast(1.02); transition: filter 600ms, transform 1.2s var(--ease-out); }
+  .mcard:hover .mcard__media :global(img) { filter: none; transform: scale(1.04); }
+  .mcard__play {
+    position: absolute; inset-inline-start: var(--s-3); bottom: var(--s-3);
+    width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    background: rgb(21 20 18 / 0.72); color: var(--on-night); backdrop-filter: blur(4px);
+  }
+  .mcard__meta { display: grid; }
+  .mcard__title { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.3; }
+</style>

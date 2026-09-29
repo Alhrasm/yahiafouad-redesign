@@ -1,0 +1,354 @@
+---
+/**
+ * Guided booking (URL preserved: /booking-app/).
+ * Steps 1–4 run here with LIVE availability & prices from the existing
+ * JetAppointments REST endpoint. Step 5 hands the selection to the existing
+ * WordPress booking engine (JetEngine form → WooCommerce checkout), which the
+ * YF Booking Bridge pre-fills. Booking/payment logic is untouched.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { sessionTypes, bookingTerms, availability, live, contact, PRODUCTION_ORIGIN, integrations } from '../../data/site';
+import { formatPrice } from '../../lib/url';
+
+const intents = [
+  { key: 'partner', title: 'علاقتي بشريك حياتي', text: 'فجوة في التواصل، أو خلافات تتكرر ولا تنتهي.', rec: 'consult' },
+  { key: 'parenting', title: 'تربية أبنائي', text: 'الأطفال والمراهقين: العناد، الصمت، الكذب، فقدان الثقة.', rec: 'consult' },
+  { key: 'family', title: 'خلافات أسرية', text: 'المشكلة تخص أكثر من فرد في البيت.', rec: 'family' },
+  { key: 'self', title: 'نفسي ومشاعري', text: 'أريد أن أفهم نفسي وأرتّب مشاعري.', rec: 'private' },
+  { key: 'unsure', title: 'لست متأكدًا بعد', text: 'أحتاج من يسمعني ويساعدني أحدد من أين أبدأ.', rec: 'consult' },
+];
+
+const steps = ['ما تحتاجه', 'نوع الجلسة', 'الموعد', 'بيانات التواصل', 'المراجعة والدفع'];
+
+const config = {
+  rest: `${live.restBase}/jet-engine/v2/appointment-date-slots`,
+  engine: live.booking, // cross-origin handoff (preview / static hosting)
+  engineSameOrigin: '/booking-ap/', // when this wizard is served from yahiafouad.com itself
+  productionOrigin: PRODUCTION_ORIGIN,
+  productionHosts: integrations.productionHosts,
+  weekdays: availability.weekdays,
+  horizonDays: 60,
+  intents: Object.fromEntries(intents.map((i) => [i.key, { title: i.title, rec: i.rec }])),
+  services: Object.fromEntries(sessionTypes.map((s) => [s.id, { key: s.key, name: s.name, price: s.priceFallback }])),
+};
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'استشارات يحيى فؤاد',
+    provider: { '@id': `${PRODUCTION_ORIGIN}/#person` },
+    areaServed: 'EG',
+    offers: sessionTypes.map((s) => ({
+      '@type': 'Offer',
+      name: s.name,
+      price: s.priceFallback,
+      priceCurrency: 'EGP',
+      url: `${PRODUCTION_ORIGIN}/booking-app/`,
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="احجز استشارتك"
+  description="احجز جلستك مع يحيى فؤاد في خمس خطوات: ما تحتاجه، نوع الجلسة، الموعد، بيانات التواصل، ثم الدفع الآمن. جلسات استشارية وخاصة وعائلية بسرّية تامة."
+  showMobileCta={false}
+  schema={schema}
+>
+  <section class="bk-head">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'الاستشارات', href: '/consultations/' }, { label: 'احجز استشارتك' }]} />
+      <div class="bk-head__grid">
+        <div>
+          <p class="eyebrow">رفيق الوعي · حجز استشارة</p>
+          <h1 class="h1 bk-head__title">خطوة هادئة نحو فهمٍ أعمق.</h1>
+        </div>
+        <p class="lead muted bk-head__lede">
+          أحيانًا كل ما تحتاجه الأسرة أو الزوجان أو الفرد هو أن يجد من يفهمه بعمق، ويسمعه جيدًا، ويوجّهه من قلب خبرة حقيقية.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bk" aria-label="خطوات الحجز">
+    <div class="container bk__grid">
+      <div class="bk__main">
+        <ol class="bk-progress" role="list" aria-label="مراحل الحجز" data-progress>
+          {steps.map((s, i) => (
+            <li data-progress-step={i + 1} aria-current={i === 0 ? 'step' : undefined}>
+              <span class="bk-progress__n num">{i + 1}</span>
+              <span class="bk-progress__label">{s}</span>
+            </li>
+          ))}
+        </ol>
+
+        <noscript>
+          <div class="bk-fallback">
+            <p>لإكمال الحجز بخطوات موجّهة، فعّل JavaScript في المتصفح. أو احجز مباشرة من <a href={live.booking}>صفحة الحجز</a>.</p>
+          </div>
+        </noscript>
+
+        <form class="bk-form" data-booking novalidate>
+          <!-- STEP 1 -->
+          <fieldset class="bk-step" data-step="1">
+            <legend class="sr-only">الخطوة ١ من ٥: ما الذي تحتاج مساعدة فيه؟</legend>
+            <h2 class="bk-step__title" tabindex="-1">ما الذي تحتاج مساعدة فيه؟</h2>
+            <p class="muted bk-step__hint">اختر الأقرب لما تمر به. سنقترح عليك نوع الجلسة المناسب.</p>
+            <div class="choice-grid">
+              {intents.map((it) => (
+                <label class="choice">
+                  <input type="radio" name="intent" value={it.key} required />
+                  <span class="choice__body">
+                    <span class="choice__title">{it.title}</span>
+                    <span class="choice__text">{it.text}</span>
+                  </span>
+                  <span class="choice__check" aria-hidden="true"></span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <!-- STEP 2 -->
+          <fieldset class="bk-step" data-step="2" hidden>
+            <legend class="sr-only">الخطوة ٢ من ٥: اختيار نوع الجلسة</legend>
+            <h2 class="bk-step__title" tabindex="-1">اختر نوع الجلسة</h2>
+            <p class="muted bk-step__hint">مدة كل جلسة ساعة كاملة، وتتم بسرّية تامة.</p>
+            <div class="choice-list">
+              {sessionTypes.map((s) => (
+                <label class="choice choice--wide" data-service-card={s.key}>
+                  <input type="radio" name="service_id" value={s.id} required />
+                  <span class="choice__body">
+                    <span class="choice__row">
+                      <span class="choice__title">{s.name}</span>
+                      <span class="tag tag--olive choice__rec" hidden data-rec-badge>مقترحة لك</span>
+                    </span>
+                    <span class="choice__text">{s.description}</span>
+                    <span class="choice__meta">
+                      <span>٦٠ دقيقة</span>
+                      <span aria-hidden="true">·</span>
+                      <span data-price={s.id}>{formatPrice(s.priceFallback)}</span>
+                    </span>
+                  </span>
+                  <span class="choice__check" aria-hidden="true"></span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <!-- STEP 3 -->
+          <fieldset class="bk-step" data-step="3" hidden>
+            <legend class="sr-only">الخطوة ٣ من ٥: اختيار الموعد</legend>
+            <h2 class="bk-step__title" tabindex="-1">اختر الموعد المناسب</h2>
+            <p class="muted bk-step__hint">المواعيد المتاحة من الأحد إلى الخميس، بتوقيت القاهرة، وتظهر مباشرة من جدول يحيى.</p>
+            <div class="cal" data-cal>
+              <div class="cal__head">
+                <button type="button" class="cal__nav" data-cal-prev aria-label="الشهر السابق">→</button>
+                <p class="cal__month" data-cal-month aria-live="polite"></p>
+                <button type="button" class="cal__nav" data-cal-next aria-label="الشهر التالي">←</button>
+              </div>
+              <div class="cal__grid" role="group" aria-label="أيام الشهر" data-cal-grid></div>
+            </div>
+            <div class="slots" data-slots aria-live="polite">
+              <p class="slots__empty muted">اختر يومًا من التقويم لتظهر الأوقات المتاحة.</p>
+            </div>
+          </fieldset>
+
+          <!-- STEP 4 -->
+          <fieldset class="bk-step" data-step="4" hidden>
+            <legend class="sr-only">الخطوة ٤ من ٥: بيانات التواصل</legend>
+            <h2 class="bk-step__title" tabindex="-1">كيف نتواصل معك؟</h2>
+            <p class="muted bk-step__hint">نستخدم بياناتك لتأكيد الحجز وإرسال تفاصيل الجلسة فقط. بياناتك سرّية ولا تُشارك مع أي طرف.</p>
+            <div class="bk-fields">
+              <div class="field">
+                <label for="bk-phone">رقم الموبايل (واتساب) <span aria-hidden="true">*</span></label>
+                <input id="bk-phone" name="phone" type="tel" class="input" dir="ltr" autocomplete="tel" inputmode="tel" required aria-describedby="bk-phone-hint bk-phone-err" />
+                <p id="bk-phone-hint" class="hint">لو خارج مصر، اكتب كود الدولة قبل الرقم (مثل ‎+971).</p>
+                <p id="bk-phone-err" class="error" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label for="bk-email">البريد الإلكتروني <span aria-hidden="true">*</span></label>
+                <input id="bk-email" name="email" type="email" class="input" dir="ltr" autocomplete="email" inputmode="email" required aria-describedby="bk-email-err" />
+                <p id="bk-email-err" class="error" aria-live="polite"></p>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- STEP 5 -->
+          <fieldset class="bk-step" data-step="5" hidden>
+            <legend class="sr-only">الخطوة ٥ من ٥: المراجعة والدفع</legend>
+            <h2 class="bk-step__title" tabindex="-1">راجع حجزك</h2>
+            <dl class="review" data-review></dl>
+            <details class="terms">
+              <summary>الشروط والأحكام الخاصة بالجلسات</summary>
+              <ul role="list">{bookingTerms.map((t) => <li>{t}</li>)}</ul>
+            </details>
+            <label class="consent">
+              <input type="checkbox" name="consent" required />
+              <span>قرأت الشروط والأحكام وأوافق عليها.</span>
+            </label>
+            <p class="error" data-consent-err aria-live="polite"></p>
+            <p class="small muted bk-handoff-note">
+              بعد التأكيد ستنتقل إلى صفحة الدفع الآمن على <span class="en">yahiafouad.com</span>، وسيتم تأكيد الحجز بعد إتمام الدفع.
+            </p>
+          </fieldset>
+
+          <div class="bk-actions">
+            <button type="button" class="btn btn--secondary" data-back hidden>→ رجوع</button>
+            <button type="submit" class="btn" data-next>التالي <span class="arrow" aria-hidden="true">←</span></button>
+          </div>
+          <p class="bk-status small" data-status role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <aside class="bk-summary" aria-label="ملخص الحجز">
+        <div class="bk-summary__card">
+          <p class="bk-summary__label caption">ملخص حجزك</p>
+          <dl class="bk-summary__list" data-summary>
+            <div><dt>ما تحتاجه</dt><dd data-sum="intent">—</dd></div>
+            <div><dt>نوع الجلسة</dt><dd data-sum="service">—</dd></div>
+            <div><dt>الموعد</dt><dd data-sum="slot">—</dd></div>
+            <div><dt>التكلفة</dt><dd data-sum="price">—</dd></div>
+          </dl>
+          <ul class="bk-summary__trust" role="list">
+            <li>سرّية تامة — لا تسجيل ولا مشاركة لأي جزء من الجلسة.</li>
+            <li>مدة الجلسة ساعة كاملة.</li>
+            <li>الإلغاء واسترداد المبلغ متاح قبل الموعد بـ٤ أيام.</li>
+          </ul>
+        </div>
+        <p class="bk-summary__help small muted">
+          تحتاج مساعدة في الحجز؟ راسلنا على <a href={`mailto:${contact.email}`} class="en">{contact.email}</a>
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <script type="application/json" id="booking-config" set:html={JSON.stringify(config)} />
+  <script>
+    import '../../scripts/booking';
+  </script>
+</BaseLayout>
+
+<style>
+  .bk-head { padding-block: var(--s-5) var(--s-6); }
+  .bk-head__grid { display: grid; gap: var(--s-4); margin-block-start: var(--s-4); align-items: end; }
+  .bk-head__title { max-width: 14ch; margin-block-start: var(--s-3); }
+  .bk-head__lede { max-width: 34rem; }
+  @media (min-width: 1024px) { .bk-head__grid { grid-template-columns: 1fr 1fr; gap: var(--s-8); } }
+
+  .bk { padding-block-end: var(--section); }
+  .bk__grid { display: grid; gap: var(--s-7); align-items: start; }
+  @media (min-width: 1024px) { .bk__grid { grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s-8); } }
+
+  /* Progress */
+  .bk-progress { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-block-end: var(--s-6); }
+  .bk-progress li { display: grid; gap: var(--s-2); font-size: var(--fs-caption); color: var(--muted); }
+  .bk-progress li::before { content: ''; height: 3px; border-radius: 3px; background: var(--line-strong); transition: background var(--dur); }
+  .bk-progress li[data-done]::before, .bk-progress li[aria-current]::before { background: var(--olive); }
+  .bk-progress li[aria-current] { color: var(--ink); font-weight: 600; }
+  .bk-progress__n { display: none; }
+  @media (max-width: 640px) {
+    .bk-progress__label { display: none; }
+    .bk-progress li[aria-current] .bk-progress__label { display: block; white-space: nowrap; }
+    .bk-progress li[aria-current] { grid-column: span 1; }
+  }
+
+  .bk-form { display: grid; gap: var(--s-6); }
+  .bk-step { border: 0; padding: 0; min-width: 0; display: grid; gap: var(--s-4); }
+  .bk-step__title { font-size: var(--fs-h2); outline: none; }
+  .bk-step__hint { margin-block-start: calc(var(--s-2) * -1); }
+
+  /* Choices */
+  .choice-grid { display: grid; gap: var(--s-3); }
+  @media (min-width: 640px) { .choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .choice-list { display: grid; gap: var(--s-3); }
+  .choice {
+    position: relative; display: grid; grid-template-columns: 1fr auto; gap: var(--s-4); align-items: start;
+    padding: var(--s-5); border: 1px solid var(--line-strong); border-radius: var(--radius); background: #fbf8f3;
+    cursor: pointer; transition: border-color var(--dur), background var(--dur), box-shadow var(--dur);
+  }
+  .choice:hover { border-color: var(--ink-2); }
+  .choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .choice:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .choice:has(input:checked) { border-color: var(--olive-deep); background: #f1efe3; box-shadow: inset 0 0 0 1px var(--olive-deep); }
+  .choice__body { display: grid; gap: var(--s-1); }
+  .choice__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
+  .choice__title { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.25; font-weight: 600; }
+  .choice__text { font-size: var(--fs-small); color: var(--muted); line-height: 1.8; }
+  .choice__meta { display: flex; gap: 0.5em; margin-block-start: var(--s-2); font-weight: 600; font-size: var(--fs-small); color: var(--ink); }
+  .choice__check { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line-strong); display: grid; place-items: center; margin-block-start: 6px; }
+  .choice:has(input:checked) .choice__check { border-color: var(--olive-deep); background: var(--olive-deep); }
+  .choice:has(input:checked) .choice__check::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--paper); }
+
+  /* Calendar */
+  .cal { border: 1px solid var(--line-strong); border-radius: var(--radius); padding: var(--s-4); background: #fbf8f3; }
+  .cal__head { display: flex; align-items: center; justify-content: space-between; margin-block-end: var(--s-3); }
+  .cal__month { font-family: var(--font-display); font-size: 1.5rem; }
+  .cal__nav { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line-strong); background: transparent; }
+  .cal__nav:hover:not(:disabled) { border-color: var(--ink); }
+  .cal__nav:disabled { opacity: 0.3; cursor: not-allowed; }
+  .cal__grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .cal__grid :global(.cal__dow) { text-align: center; font-size: var(--fs-caption); color: var(--muted); padding-block: var(--s-2); }
+  .cal__grid :global(.cal__day) {
+    aspect-ratio: 1; min-height: 44px; border-radius: 10px; border: 1px solid transparent; background: transparent;
+    font-family: var(--font-display); font-size: 1.2rem; display: grid; place-items: center;
+  }
+  .cal__grid :global(.cal__day:not(:disabled)) { background: var(--paper); border-color: var(--line); }
+  .cal__grid :global(.cal__day:not(:disabled):hover) { border-color: var(--ink); }
+  .cal__grid :global(.cal__day:disabled) { color: rgb(28 27 25 / 0.28); cursor: default; }
+  .cal__grid :global(.cal__day[aria-pressed='true']) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .slots { min-height: 3rem; }
+  .slots :global(.slots__grid) { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: var(--s-2); margin-block-start: var(--s-3); }
+  .slots :global(.slot) { position: relative; }
+  .slots :global(.slot input) { position: absolute; opacity: 0; }
+  .slots :global(.slot span) {
+    display: grid; place-items: center; min-height: 48px; border: 1px solid var(--line-strong); border-radius: 999px;
+    background: #fbf8f3; font-weight: 600; font-size: var(--fs-small); cursor: pointer; direction: ltr;
+  }
+  .slots :global(.slot input:checked + span) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .slots :global(.slot input:focus-visible + span) { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .slots :global(.slots__title) { font-weight: 600; margin-block-start: var(--s-4); }
+
+  .bk-fields { display: grid; gap: var(--s-5); max-width: 32rem; }
+
+  .review { display: grid; border-top: 1px solid var(--line); }
+  .review :global(div) { display: grid; grid-template-columns: 9rem 1fr; gap: var(--s-4); padding-block: var(--s-3); border-bottom: 1px solid var(--line); }
+  .review :global(dt) { color: var(--muted); font-size: var(--fs-small); }
+  .review :global(dd) { font-weight: 600; }
+  .review :global(button) { background: none; border: 0; color: var(--olive-deep); text-decoration: underline; font-size: var(--fs-small); padding: 0; margin-inline-start: var(--s-2); min-height: 32px; }
+  .terms { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s-3) var(--s-4); background: #fbf8f3; }
+  .terms summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+  .terms ul { margin-block-start: var(--s-3); padding-inline-start: 1.2em; display: grid; gap: var(--s-2); font-size: var(--fs-small); color: var(--ink-2); }
+  .consent { display: flex; align-items: flex-start; gap: var(--s-3); cursor: pointer; }
+  .consent input { width: 22px; height: 22px; margin-block-start: 5px; accent-color: var(--olive-deep); flex: none; }
+  .error { color: #8f3524; font-size: var(--fs-small); min-height: 1.2em; }
+
+  .bk-actions { display: flex; justify-content: space-between; gap: var(--s-3); padding-block-start: var(--s-5); border-top: 1px solid var(--line); }
+  .bk-actions [data-next] { margin-inline-start: auto; }
+  @media (max-width: 520px) {
+    .bk-actions { position: sticky; bottom: 0; background: var(--paper); padding-block: var(--s-3) calc(var(--s-3) + env(safe-area-inset-bottom)); margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); z-index: 5; }
+    .bk-actions [data-next] { flex: 1; }
+  }
+  .bk-status { min-height: 1.5em; color: var(--muted); }
+  .bk-fallback { padding: var(--s-4); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+
+  /* Summary */
+  .bk-summary { position: sticky; top: calc(var(--header-h) + var(--s-5)); display: grid; gap: var(--s-3); }
+  .bk-summary__card { background: var(--night); color: var(--on-night); border-radius: var(--radius-l); padding: var(--s-6) var(--s-5); }
+  .bk-summary__label { color: var(--sand-on-night); margin-block-end: var(--s-3); }
+  .bk-summary__list { display: grid; }
+  .bk-summary__list div { display: grid; gap: 2px; padding-block: var(--s-3); border-bottom: 1px solid var(--night-line); }
+  .bk-summary__list dt { font-size: var(--fs-caption); color: var(--on-night-muted); }
+  .bk-summary__list dd { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.35; }
+  .bk-summary__trust { list-style: none; padding: 0; margin-block-start: var(--s-5); display: grid; gap: var(--s-2); font-size: var(--fs-caption); color: var(--on-night-muted); }
+  .bk-summary__trust li { padding-inline-start: 1.2em; position: relative; }
+  .bk-summary__trust li::before { content: ''; position: absolute; inset-inline-start: 0; top: 0.75em; width: 6px; height: 6px; border-radius: 50%; background: var(--sand-on-night); }
+  .bk-summary__help a { color: inherit; }
+  @media (max-width: 1023px) {
+    .bk-summary { position: static; }
+    .bk-summary__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-4); }
+    .bk-summary__list dd { font-size: 1.1rem; }
+  }
+</style>

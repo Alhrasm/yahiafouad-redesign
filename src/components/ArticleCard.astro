@@ -1,0 +1,73 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { categories } from '../data/site';
+import { u, formatDateAr, toArabicDigits } from '../lib/url';
+interface Props {
+  article: CollectionEntry<'articles'>;
+  variant?: 'lead' | 'row' | 'grid';
+  index?: number;
+  headingLevel?: 'h2' | 'h3';
+}
+const { article, variant = 'grid', index = 0, headingLevel = 'h3' } = Astro.props;
+const a = article.data;
+const href = u(`/${a.slug}/`);
+const H = headingLevel;
+const cat = categories[a.category];
+---
+<article class:list={['acard', `acard--${variant}`]} data-reveal style={`--delay:${(index % 3) * 90}ms`}>
+  {variant !== 'row' && a.image && (
+    <a href={href} class="acard__media frame" tabindex="-1" aria-hidden="true">
+      <Picture
+        src={a.image}
+        alt=""
+        formats={['avif', 'webp']}
+        widths={variant === 'lead' ? [480, 800, 1200] : [400, 640, 900]}
+        sizes={variant === 'lead' ? '(min-width: 1024px) 58vw, 100vw' : '(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw'}
+        loading="lazy"
+      />
+    </a>
+  )}
+  <div class="acard__body">
+    {variant === 'row' && <span class="acard__index num" aria-hidden="true">{toArabicDigits(String(index + 1).padStart(2, '0'))}</span>}
+    <p class="acard__meta caption">
+      <span class="acard__cat">{cat.label}</span>
+      <span aria-hidden="true">·</span>
+      <time datetime={a.date.toISOString()}>{formatDateAr(a.date)}</time>
+      <span aria-hidden="true">·</span>
+      <span>{toArabicDigits(a.readingMinutes)} دقائق قراءة</span>
+    </p>
+    <H class="acard__title"><a href={href}>{a.title}</a></H>
+    {variant !== 'row' && <p class="acard__excerpt muted">{a.excerpt}</p>}
+    <a href={href} class="link-arrow acard__cta" aria-label={`اقرأ المقال: ${a.title}`} data-track="article_click" data-track-loc={variant}>
+      اقرأ المقال <span class="arrow" aria-hidden="true">←</span>
+    </a>
+  </div>
+</article>
+<style>
+  .acard { display: grid; gap: var(--s-4); align-content: start; }
+  .acard__media { display: block; aspect-ratio: 16 / 9; border-radius: var(--radius); }
+  .acard__media :global(img) { transition: transform 1.2s var(--ease-out); }
+  .acard:hover .acard__media :global(img) { transform: scale(1.035); }
+  .acard__body { display: grid; gap: var(--s-2); align-content: start; }
+  .acard__meta { display: flex; flex-wrap: wrap; gap: 0.5em; color: var(--muted); }
+  .acard__cat { color: var(--olive-deep); font-weight: 600; }
+  .acard__title { font-size: var(--fs-h3); line-height: 1.35; }
+  .acard__title a {
+    text-decoration: none; background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0 1px; background-repeat: no-repeat; background-position: 100% 95%;
+    transition: background-size 500ms var(--ease);
+  }
+  .acard__title a:hover { background-size: 100% 1px; }
+  .acard__excerpt { font-size: var(--fs-small); line-height: 1.85; }
+  .acard__cta { justify-self: start; }
+
+  .acard--lead .acard__title { font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.8rem); line-height: 1.25; }
+  .acard--lead .acard__excerpt { font-size: var(--fs-body); }
+
+  .acard--row { padding-block: var(--s-5); border-top: 1px solid var(--line); }
+  .acard--row .acard__body { grid-template-columns: auto 1fr; column-gap: var(--s-5); }
+  .acard--row .acard__body > :not(.acard__index) { grid-column: 2; }
+  .acard--row .acard__index { grid-row: 1 / span 3; font-size: 2rem; line-height: 1; color: var(--sand-deep); padding-block-start: 0.3rem; }
+  .acard--row .acard__title { font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.65rem); }
+</style>

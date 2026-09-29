@@ -1,0 +1,27 @@
+---
+/** Brand lockup: the existing YF mark (recoloured via CSS mask) + Arabic wordmark. */
+import { u } from '../lib/url';
+interface Props { size?: 'sm' | 'md' }
+const { size = 'md' } = Astro.props;
+---
+
+<span class:list={['logo', `logo--${size}`]} style={`--mark:url("${u('/logo-mark.png')}")`}>
+  <span class="logo__mark" aria-hidden="true"></span>
+  <span class="logo__text">
+    <span class="logo__ar">يحيى فؤاد</span>
+    <span class="logo__en en" aria-hidden="true">YAHIA FOUAD</span>
+  </span>
+</span>
+
+<style>
+  .logo { display: inline-flex; align-items: center; gap: 0.7rem; color: inherit; }
+  .logo__mark {
+    width: 34px; height: 38px; background: currentColor;
+    -webkit-mask: var(--mark) center / contain no-repeat; mask: var(--mark) center / contain no-repeat;
+  }
+  .logo__text { display: grid; line-height: 1; }
+  .logo__ar { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; line-height: 1; }
+  .logo__en { font-size: 0.6rem; letter-spacing: 0.32em; opacity: 0.62; margin-block-start: 0.35rem; }
+  .logo--sm .logo__mark { width: 28px; height: 32px; }
+  .logo--sm .logo__ar { font-size: 1.4rem; }
+</style>

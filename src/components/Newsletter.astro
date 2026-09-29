@@ -1,0 +1,30 @@
+---
+/**
+ * Newsletter sign-up. Posts to `integrations.newsletterEndpoint` (Mail Mint on
+ * WordPress) when configured; otherwise runs in preview mode and says so.
+ */
+import { integrations } from '../data/site';
+interface Props { tone?: 'paper' | 'night'; source: string }
+const { tone = 'paper', source } = Astro.props;
+const id = `nl-${source}`;
+---
+
+<form class:list={['newsletter', `newsletter--${tone}`]} data-newsletter data-endpoint={integrations.newsletterEndpoint} data-source={source} novalidate>
+  <label for={id} class="sr-only">بريدك الإلكتروني</label>
+  <div class="newsletter__row">
+    <input id={id} name="email" type="email" class="input" placeholder="بريدك الإلكتروني" autocomplete="email" inputmode="email" dir="ltr" required aria-describedby={`${id}-msg`} />
+    <button type="submit" class:list={['btn', tone === 'night' && 'btn--light']}>اشترك</button>
+  </div>
+  <p id={`${id}-msg`} class="newsletter__msg caption" role="status" aria-live="polite"></p>
+</form>
+
+<style>
+  .newsletter { margin-block-start: var(--s-4); }
+  .newsletter__row { display: flex; gap: var(--s-2); }
+  .newsletter__row .input { flex: 1; min-width: 0; }
+  .newsletter--night .input { background: var(--night-2); border-color: var(--night-line); color: var(--on-night); }
+  .newsletter--night .input::placeholder { color: var(--on-night-muted); }
+  .newsletter--night .input:focus { border-color: var(--sand-on-night); box-shadow: 0 0 0 3px rgb(217 194 155 / 0.2); }
+  .newsletter__msg { min-height: 1.6em; margin-block-start: var(--s-2); }
+  @media (max-width: 420px) { .newsletter__row { flex-direction: column; } }
+</style>
